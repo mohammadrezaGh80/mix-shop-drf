@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils.translation import gettext_lazy as _
-
+from django.core.exceptions import ValidationError
 
 from .validators import PhoneValidator
 
@@ -14,10 +14,15 @@ class CustomUserManager(BaseUserManager):
         """
         if not phone:
             raise ValueError(_('Users must have an phone number.'))
+        
+        if email:
+            email = self.normalize_email(email)
+        else:
+            email = None
 
         user = self.model(
             phone=phone,
-            email=self.normalize_email(email),
+            email=email,
             **extra_fields
         )
 
@@ -65,9 +70,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
+    def __str__(self):
+        return self.phone
+
     class Meta:
         verbose_name = _("User")
         verbose_name_plural = _("Users")
-
-    def __str__(self):
-        return self.phone
+        

@@ -1,9 +1,11 @@
 from django.db import models
 from django.conf import settings
+from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 
 from uuid import uuid4
 
@@ -24,10 +26,16 @@ class Address(models.Model):
     province = models.CharField(max_length=255, verbose_name=_("Province"))
     city = models.CharField(max_length=255, verbose_name=_("City"))
     plaque = models.PositiveSmallIntegerField(verbose_name=_("Plaque"))
-    Postal_code = models.PositiveBigIntegerField(validators=[postal_code_validator], verbose_name=_("Postal code"))
+    postal_code = models.PositiveBigIntegerField(validators=[postal_code_validator], verbose_name=_("Postal code"))
+
+    def clean(self):
+        super().clean()
+
+        if not self.content_object:
+            raise ValidationError(_(f"There isn't any {self.content_type.model_class().__name__} with id={self.object_id}."))
 
     def __str__(self):
-        return f"{self.province}(City: {self.city}): {self.Postal_code}"
+        return f"{self.province}(City: {self.city}): {self.postal_code}"
     
     class Meta:
         verbose_name = _("Address")
@@ -69,7 +77,7 @@ class Customer(Person):
 
 class Seller(Person):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="seller", verbose_name=_("User"))
-    cv = models.FileField(upload_to="store/cv_files/", verbose_name=_("CV"))
+    cv = models.FileField(upload_to="store/cv_files/", blank=True, null=True, verbose_name=_("CV"))
 
     addresses = GenericRelation(Address, related_query_name="seller")
     comments = GenericRelation('Comment', related_query_name="seller")
@@ -110,6 +118,10 @@ class Product(models.Model):
         verbose_name_plural = _("Products")
 
 
+class CommentManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('content_object')
+
 class Comment(models.Model):
     COMMENT_STATUS_WAITING = "w"
     COMMENT_STATUS_APPROVED = "a"
@@ -123,7 +135,7 @@ class Comment(models.Model):
     content_type = models.ForeignKey(
         ContentType, 
         on_delete=models.PROTECT, 
-        limit_choices_to=models.Q(app_label="store", model="customer") | models.Q(app_label="store", model="seller")
+        limit_choices_to=models.Q(app_label="store", model="customer") | models.Q(app_label="store", model="seller") # TODO: is need seller?
     )
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
@@ -136,8 +148,11 @@ class Comment(models.Model):
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
+
+    objects = CommentManager()
+
     def __str__(self):
-        return f"{self.title}" # TODO: show first name and last name user 
+        return f"{self.title}({self.content_object})"
     
     class Meta:
         verbose_name = _("Comment")
@@ -158,13 +173,21 @@ class Cart(models.Model):
         verbose_name_plural = _("Carts")
 
 
+class CartItemManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('product')
+
+
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items", verbose_name=_("Cart"))
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="cart_items", verbose_name=_("Product"))
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
 
+
+    objects = CartItemManager()
+
     def __str__(self):
-        return f"{self.product}" # TODO: show proper string
+        return f"Cart(id: {self.id}): {self.product} x {self.quantity}" # TODO: show proper string
     
     class Meta:
         unique_together = [["cart", "product"]]
@@ -172,6 +195,12 @@ class CartItem(models.Model):
     class Meta:
         verbose_name = _("Cart item")
         verbose_name_plural = _("Cart items")
+
+
+
+class OrderManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('customer')
 
 
 class Order(models.Model):
@@ -190,6 +219,9 @@ class Order(models.Model):
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
+
+    objects = OrderManager()
+
     def __str__(self):
         return f"Order {self.id}(Customer: {self.customer})"
     
@@ -198,14 +230,22 @@ class Order(models.Model):
         verbose_name_plural = _("Orders")
 
 
+class OrderItemManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('product')
+
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="items", verbose_name=_("Cart"))
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="order_items", verbose_name=_("Product"))
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
     price = models.PositiveIntegerField(verbose_name=_("Price"))
 
+
+    objects = OrderItemManager()
+
     def __str__(self):
-        return f"Order item {self.id}: {self.product} x {self.quantity}"
+        return f"Order item(id: {self.id}): {self.product} x {self.quantity}"
 
     class Meta:
         unique_together = [["order", "product"]]
