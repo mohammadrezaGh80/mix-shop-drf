@@ -3,6 +3,7 @@ from factory.django import DjangoModelFactory
 from django.db.models import signals
 
 import random
+import string
 import factory
 from datetime import datetime
 from faker import Faker
@@ -46,7 +47,7 @@ class CustomerFactory(DjangoModelFactory):
         model = models.Customer
     
     user = factory.SubFactory(CustomUserFactory)
-    first_name = factory.LazyAttribute(lambda o: o.user.email.split('@')[0])
+    first_name = factory.LazyAttribute(lambda o: o.user.email.split('@')[0].strip(string.digits))
     last_name = factory.Faker("last_name")
     birth_date = factory.LazyFunction(lambda: faker.date_time_ad(start_datetime=datetime(1980, 1, 1), end_datetime=datetime(2014, 1, 1)))
     gender = factory.LazyFunction(lambda: random.choice([models.Customer.PERSON_GENDER_MALE, models.Customer.PERSON_GENDER_FEMALE]))
@@ -58,7 +59,7 @@ class SellerFactory(DjangoModelFactory):
         model = models.Seller
 
     user = factory.SubFactory(CustomUserFactory)
-    first_name = factory.LazyAttribute(lambda o: o.user.email.split('@')[0])
+    first_name = factory.LazyAttribute(lambda o: o.user.email.split('@')[0].strip(string.digits))
     last_name = factory.Faker("last_name")
     birth_date = factory.LazyFunction(lambda: faker.date_time_ad(start_datetime=datetime(1980, 1, 1), end_datetime=datetime(2014, 1, 1)))
     gender = factory.LazyFunction(lambda: random.choice([models.Customer.PERSON_GENDER_MALE, models.Customer.PERSON_GENDER_FEMALE]))
@@ -68,12 +69,7 @@ class CategoryFactory(DjangoModelFactory):
     class Meta:
         model = models.Category
     
-    title = factory.Faker(
-        'sentence',
-        nb_words=3,
-        variable_nb_words=True
-    )
-
+    title = factory.LazyFunction(lambda: faker.sentence(nb_words=3, variable_nb_words=True)[:-1])
 
 class ProductFactory(DjangoModelFactory):
     class Meta:

@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -45,9 +44,12 @@ class Address(models.Model):
 class Person(models.Model):
     PERSON_GENDER_MALE = "m"
     PERSON_GENDER_FEMALE = "f"
+    PERSON_GENDER_NOT_DEFINED = ""
+
     PERSON_GENDER = [
         (PERSON_GENDER_MALE, _('Male')),
-        (PERSON_GENDER_FEMALE, _('Female'))
+        (PERSON_GENDER_FEMALE, _('Female')),
+        (PERSON_GENDER_NOT_DEFINED, _('Not defined'))
     ]
 
     first_name = models.CharField(max_length=255, blank=True, verbose_name=_("First name"))
@@ -99,10 +101,10 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    seller = models.ForeignKey(Seller, on_delete=models.PROTECT, related_name="products", verbose_name=_("Seller"))
-    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products", verbose_name=_("Category"))
     title = models.CharField(max_length=255, verbose_name=_("Title"))
     slug = models.SlugField(verbose_name=_("Slug"))
+    seller = models.ForeignKey(Seller, on_delete=models.PROTECT, related_name="products", verbose_name=_("Seller"))
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products", verbose_name=_("Category"))
     description = models.TextField(verbose_name=_("Description"))
     price = models.PositiveIntegerField(verbose_name=_("Price"))
     inventory = models.PositiveSmallIntegerField(verbose_name=_("Inventory"))
@@ -117,10 +119,6 @@ class Product(models.Model):
         verbose_name = _("Product")
         verbose_name_plural = _("Products")
 
-
-class CommentManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().prefetch_related('content_object')
 
 class Comment(models.Model):
     COMMENT_STATUS_WAITING = "w"
@@ -149,8 +147,6 @@ class Comment(models.Model):
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
 
-    objects = CommentManager()
-
     def __str__(self):
         return f"{self.title}({self.content_object})"
     
@@ -173,18 +169,10 @@ class Cart(models.Model):
         verbose_name_plural = _("Carts")
 
 
-class CartItemManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().select_related('product')
-
-
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items", verbose_name=_("Cart"))
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="cart_items", verbose_name=_("Product"))
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
-
-
-    objects = CartItemManager()
 
     def __str__(self):
         return f"Cart(id: {self.id}): {self.product} x {self.quantity}" # TODO: show proper string
@@ -195,12 +183,6 @@ class CartItem(models.Model):
     class Meta:
         verbose_name = _("Cart item")
         verbose_name_plural = _("Cart items")
-
-
-
-class OrderManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().select_related('customer')
 
 
 class Order(models.Model):
@@ -220,8 +202,6 @@ class Order(models.Model):
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
 
-    objects = OrderManager()
-
     def __str__(self):
         return f"Order {self.id}(Customer: {self.customer})"
     
@@ -230,19 +210,12 @@ class Order(models.Model):
         verbose_name_plural = _("Orders")
 
 
-class OrderItemManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().select_related('product')
-
-
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="items", verbose_name=_("Cart"))
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="order_items", verbose_name=_("Product"))
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
     price = models.PositiveIntegerField(verbose_name=_("Price"))
 
-
-    objects = OrderItemManager()
 
     def __str__(self):
         return f"Order item(id: {self.id}): {self.product} x {self.quantity}"

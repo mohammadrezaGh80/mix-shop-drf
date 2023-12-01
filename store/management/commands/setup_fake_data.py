@@ -25,7 +25,7 @@ faker = Faker()
 
 list_of_models = [Address, Customer, Seller, Category, Product, Comment, Cart, CartItem, Order, OrderItem]
 
-NUM_CUSTOMERS = 100
+NUM_CUSTOMERS = 90
 NUM_SELLERS = 10
 NUM_CATEGORIES = 50
 NUM_PRODUCTS = 1000
@@ -51,14 +51,26 @@ class Command(BaseCommand):
         all_categories = [CategoryFactory() for _ in range(NUM_CATEGORIES)]
         print("DONE")
 
-        # sellers data
-        print(f"Adding {NUM_SELLERS} sellers...", end='')
-        all_sellers = list([SellerFactory() if random.random() > 0.3 else SellerFactory(birth_date=None) for _ in range(NUM_SELLERS)])
-        print("DONE")
-
         # customers data
         print(f"Adding {NUM_CUSTOMERS} customers...", end='')
         all_customers = list([CustomerFactory() if random.random() > 0.3 else CustomerFactory(birth_date=None) for _ in range(NUM_CUSTOMERS)])
+        print("DONE")
+
+        # sellers data
+        print(f"Adding {NUM_SELLERS} sellers...", end='')
+        all_sellers = list()
+        for _ in range(NUM_SELLERS):
+            seller = SellerFactory() if random.random() > 0.3 else SellerFactory(birth_date=None)
+            customer = CustomerFactory(
+                user=seller.user,
+                first_name=seller.first_name,
+                last_name=seller.last_name,
+                gender=seller.gender,
+                birth_date=seller.birth_date
+            )
+            all_customers.append(customer)
+            all_sellers.append(seller)
+
         print("DONE")
 
         # addresses data
@@ -69,7 +81,7 @@ class Command(BaseCommand):
         for person in all_person:
             for _ in range(random.randint(0, 3)):
                 address = AddressFactory(
-                    content_object = person
+                    content_object=person
                 )
                 all_addresses.append(address)
 
