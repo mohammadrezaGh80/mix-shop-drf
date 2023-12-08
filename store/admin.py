@@ -64,12 +64,13 @@ class InventoryFilter(admin.SimpleListFilter):
 # Custom admin 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'wallet_amount', 'gender', 'num_of_comments', 'num_of_addresses']
+    list_display = ['get_phone', 'first_name', 'last_name', 'wallet_amount', 'gender', 'num_of_comments', 'num_of_addresses']
     list_editable = ['gender']
     list_per_page = 15
     list_filter = [GenderFilter]
     autocomplete_fields = ['user']
     search_fields = ['first_name', 'last_name']
+    list_select_related = ['user']
 
     def get_queryset(self, request):
         return super().get_queryset(request)\
@@ -99,6 +100,10 @@ class CustomerAdmin(admin.ModelAdmin):
             })
         )
         return format_html('<a href={}>{}</a>', url, customer.addresses.count())
+    
+    @admin.display(description='phone', ordering='user__phone')
+    def get_phone(self, customer):
+        return customer.user.phone
 
 
 @admin.register(Seller)

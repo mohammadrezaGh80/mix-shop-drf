@@ -4,8 +4,10 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated
 
-from .serializers import OTPSerializer, VerifyOTPSerializer
+from .serializers import OTPSerializer, VerifyOTPSerializer, CustomTokenObtainPairSerializer, SetPasswordSerializer
 from .models import OTP
 from .throttles import RequestOTPThrottle
 
@@ -20,11 +22,8 @@ class OTPGenericAPIView(generics.GenericAPIView):
             return [RequestOTPThrottle()]
         return []
 
-    def get_serializer_class(self):
-        return super().get_serializer_class()
-
     def post(self, request, *args, **kwargs):
-        serializer = OTPSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True) 
         otp_obj = serializer.save()
 
@@ -50,28 +49,50 @@ class VerifyOTPGenericAPIView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         with transaction.atomic():
-            serializer = VerifyOTPSerializer(data=request.data)
+            serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
             validated_data = serializer.validated_data
             phone = validated_data.get('phone')
             password = validated_data.get('password')
 
-            otp_queryset = OTP.objects.filter(
-                id=validated_data.get('id'),
-                phone=phone,
-                password=password,
-                expired_datetime__gte=timezone.now(),
-            )
+            try:
+                otp_obj = OTP.objects.get(
+                    id=validated_data.get('id'),
+                    phone=phone,
+                    password=password,
+                    expired_datetime__gte=timezone.now(),
+                )
 
-            if otp_queryset.exists():
                 user, created = User.objects.get_or_create(phone=phone)
                 if created:
                     user.is_active = True
                     user.save()
+                
+                otp_obj.delete()
 
                 refresh_token = RefreshToken.for_user(user=user)
                 return Response({
+                        'refresh': str(refresh_token),
                         'access': str(refresh_token.access_token), 
-                        'refresh': str(refresh_token)
+                        'user_id': user.id,
+                        'phone': user.phone,
                     }, status=status.HTTP_200_OK)
-            return Response({'detail': 'Your one-time password is incorrect or has expired!'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            except OTP.DoesNotExist:
+                return Response({'detail': 'Your one-time password is incorrect or has expired!'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+class SetPasswordGenericAPIView(generics.GenericAPIView):
+    serializer_class = SetPasswordSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        serializer = self.serializer_class(user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'detail': 'Your password has been changed.'}, status=status.HTTP_200_OK)
