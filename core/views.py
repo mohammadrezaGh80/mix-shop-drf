@@ -5,11 +5,15 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
 
-from .serializers import OTPSerializer, VerifyOTPSerializer, CustomTokenObtainPairSerializer, SetPasswordSerializer
+from .serializers import OTPSerializer, VerifyOTPSerializer, CustomTokenObtainPairSerializer, \
+                          SetPasswordSerializer, UserSerializer, CreateUserSerializer
 from .models import OTP
 from .throttles import RequestOTPThrottle
+from .permissions import IsCustomAdminUser
 
 User = get_user_model()
 
@@ -96,3 +100,27 @@ class SetPasswordGenericAPIView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'detail': 'Your password has been changed.'}, status=status.HTTP_200_OK)
+
+
+class UserViewSet(ModelViewSet):
+    http_method_names = ['get', 'head', 'options', 'post', 'put', 'delete']
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    permission_classes = [IsCustomAdminUser]  
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateUserSerializer
+        return self.serializer_class
+
+    @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
+    def me(self, request, *args, **kwargs):
+        user = request.user
+        if request.method == 'GET':
+            serializer = self.serializer_class(user)
+            return Response(serializer.data)
+        elif request.method == 'PUT':
+            serializer = self.serializer_class(user, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)

@@ -66,7 +66,7 @@ class Person(models.Model):
 
 
 class Customer(Person):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="customer", verbose_name=_("User"))
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="customer", verbose_name=_("User"))
     wallet_amount = models.PositiveIntegerField(default=0, verbose_name=_("Wallet amount"))
 
     addresses = GenericRelation(Address, related_query_name="customer")
@@ -78,7 +78,7 @@ class Customer(Person):
 
 
 class Seller(Person):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="seller", verbose_name=_("User"))
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller", verbose_name=_("User"))
     cv = models.FileField(upload_to="store/cv_files/", blank=True, null=True, verbose_name=_("CV"))
 
     addresses = GenericRelation(Address, related_query_name="seller")

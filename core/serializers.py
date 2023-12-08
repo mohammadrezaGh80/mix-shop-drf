@@ -72,3 +72,19 @@ class SetPasswordSerializer(serializers.ModelSerializer):
         instance.set_password(password)
         instance.save()
         return instance
+    
+
+class UserSerializer(serializers.ModelSerializer):
+    has_password = serializers.BooleanField(source='password', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'phone', 'email', 'has_password']
+        read_only_fields = ['phone']
+
+
+class CreateUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'phone', 'email']
