@@ -1,16 +1,16 @@
-from rest_framework.response import Response
-from rest_framework import status, generics
-from django.utils import timezone
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
+from django.utils import timezone
+from rest_framework import status, generics
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 from .serializers import OTPSerializer, VerifyOTPSerializer, CustomTokenObtainPairSerializer, \
-                          SetPasswordSerializer, UserSerializer, CreateUserSerializer
+                          SetPasswordSerializer, UserSerializer, UserCreateSerializer
 from .models import OTP
 from .throttles import RequestOTPThrottle
 from .permissions import IsCustomAdminUser
@@ -31,6 +31,7 @@ class OTPGenericAPIView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True) 
         otp_obj = serializer.save()
 
+        # for connect to Kavenegar SMS service
         # try:
         #     api = KavenegarAPI(settings.SMS_API_KEY)
         #     params = {
@@ -58,19 +59,17 @@ class VerifyOTPGenericAPIView(generics.GenericAPIView):
             validated_data = serializer.validated_data
             phone = validated_data.get('phone')
             password = validated_data.get('password')
+            request_id = validated_data.get('id')
 
             try:
                 otp_obj = OTP.objects.get(
-                    id=validated_data.get('id'),
+                    id=request_id,
                     phone=phone,
                     password=password,
                     expired_datetime__gte=timezone.now(),
                 )
 
-                user, created = User.objects.get_or_create(phone=phone)
-                if created:
-                    user.is_active = True
-                    user.save()
+                user, _ = User.objects.get_or_create(phone=phone)
                 
                 otp_obj.delete()
 
@@ -110,7 +109,7 @@ class UserViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
-            return CreateUserSerializer
+            return UserCreateSerializer
         return self.serializer_class
 
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])

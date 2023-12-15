@@ -45,7 +45,6 @@ class CustomUserManager(BaseUserManager):
             **extra_fields
         )
         user.is_superuser = True
-        user.is_active = True
         user.is_staff = True
         user.save(using=self._db)
         return user
@@ -59,7 +58,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, blank=True, null=True, verbose_name=_("Email"))
 
     is_active = models.BooleanField(
-        default=False, verbose_name=_("Is active"),
+        default=True, verbose_name=_("Is active"),
         help_text=_(
             "Designates whether this user should be treated as active. "
             "Unselect this instead of deleting accounts."

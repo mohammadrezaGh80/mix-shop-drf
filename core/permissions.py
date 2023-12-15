@@ -10,5 +10,6 @@ class IsCustomAdminUser(permissions.BasePermission):
         return bool(
             request.method in ['GET', 'HEAD', 'OPTIONS', 'DELETE']
             or request.user
+            and request.user.is_staff
             and request.user == obj
         )

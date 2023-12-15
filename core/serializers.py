@@ -27,7 +27,7 @@ class OTPSerializer(serializers.ModelSerializer):
 
 
 class VerifyOTPSerializer(serializers.ModelSerializer):
-    request_id = serializers.CharField(source='id')
+    request_id = serializers.UUIDField(source='id')
 
     class Meta:
         model = OTP
@@ -83,7 +83,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['phone']
 
 
-class CreateUserSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User

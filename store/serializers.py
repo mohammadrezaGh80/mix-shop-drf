@@ -1,0 +1,69 @@
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+
+from datetime import date
+
+from .models import Customer
+
+User = get_user_model()
+
+
+class CustomerSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.phone')
+    profile_image_url = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Customer
+        fields = ['id', 'user', 'first_name', 'last_name', 'gender', 'profile_image_url', 'age']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['gender'] = instance.get_gender_display()
+        return representation
+
+    def get_profile_image_url(self, customer):
+        request = self.context.get('request')
+        if customer.profile_image:
+            return request.build_absolute_uri(customer.profile_image.url)
+        return None
+    
+    def get_age(self, customer):
+        if customer.birth_date:
+            return (date.today() - customer.birth_date).days // 365
+        return None
+
+class CustomerCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Customer
+        fields = ['id', 'user', 'profile_image', 'first_name', 
+                  'last_name', 'gender', 'birth_date']
+
+
+class CustomerDetailSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.phone', read_only=True)
+    profile_image_url = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Customer
+        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image_url', 
+                  'age', 'birth_date', 'gender', 'wallet_amount']
+        read_only_fields = ['wallet_amount']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['gender'] = instance.get_gender_display()
+        return representation
+    
+    def get_profile_image_url(self, customer):
+        request = self.context.get('request')
+        if customer.profile_image:
+            return request.build_absolute_uri(customer.profile_image.url)
+        return None
+    
+    def get_age(self, customer):
+        if customer.birth_date:
+            return (date.today() - customer.birth_date).days // 365
+        return None
