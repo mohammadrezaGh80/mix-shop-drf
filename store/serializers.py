@@ -1,11 +1,24 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
 from datetime import date
 
-from .models import Customer
+from .models import Customer, Address
 
 User = get_user_model()
+
+
+class AddressSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = ['id', 'province', 'city', 'plaque', 'postal_code']
+    
+    def create(self, validated_data):
+        customer_pk = self.context.get('customer_pk')
+        customer = get_object_or_404(Customer, pk=customer_pk)
+        return Address.objects.create(content_object=customer, **validated_data)
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -45,11 +58,12 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.phone', read_only=True)
     profile_image_url = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
+    addresses = AddressSerializer(many=True, read_only=True)
 
     class Meta:
         model = Customer
         fields = ['id', 'user', 'first_name', 'last_name', 'profile_image_url', 
-                  'age', 'birth_date', 'gender', 'wallet_amount']
+                  'age', 'birth_date', 'gender', 'wallet_amount', 'addresses']
         read_only_fields = ['wallet_amount']
 
     def to_representation(self, instance):

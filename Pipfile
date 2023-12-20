@@ -15,6 +15,7 @@ djangorestframework = "*"
 markdown = "*"
 django-filter = "*"
 kavenegar = "*"
+drf-nested-routers = "*"
 
 [dev-packages]
 
