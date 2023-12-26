@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
+from django.core.validators import FileExtensionValidator
 
 from datetime import date
 
-from .models import Customer, Address
+from .models import Customer, Address, Seller
 
 User = get_user_model()
 
@@ -81,3 +83,47 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
         if customer.birth_date:
             return (date.today() - customer.birth_date).days // 365
         return None
+
+
+class RequestSellerSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(max_length=255)
+    last_name = serializers.CharField(max_length=255)
+    birth_date = serializers.DateField()
+    cv = serializers.FileField(validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
+                               help_text=_('CV file size should be less than or equal to 5 megabytes.'))
+    
+    class Meta:
+        model = Seller
+        fields = ['id', 'first_name', 'last_name', 'birth_date', 'gender',
+                  'national_code', 'cv']
+        read_only_fields = ['id']
+        
+    def validate_gender(self, gender):
+        if gender not in [Seller.PERSON_GENDER_MALE, Seller.PERSON_GENDER_FEMALE]:
+            raise serializers.ValidationError(
+                _("Please choose your gender.")
+            )
+        return gender
+    
+    def validate_cv(self, cv):
+        cv_size = cv.size
+        if cv_size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                _('CV file size should be less than or equal to 5 megabytes.')
+            )
+        return cv
+    
+    def get_initial(self):
+        initial_dict = super().get_initial()
+        customer = self.context.get('request').user.customer
+        field_names = ['first_name', 'last_name', 'birth_date', 'gender']
+
+        for field in field_names:
+            initial_dict[field] = getattr(customer, field)
+
+        return initial_dict
+    
+    def create(self, validated_data):
+        user = self.context.get('user')
+        validated_data['user'] = user
+        return super().create(validated_data)

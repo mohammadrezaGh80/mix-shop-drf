@@ -108,7 +108,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Seller)
 class SellerAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'gender', 'num_of_addresses']
+    list_display = ['first_name', 'last_name', 'national_code', 'gender', 'status', 'num_of_addresses']
     list_editable = ['gender']
     list_per_page = 10
     list_filter = [GenderFilter]
@@ -173,7 +173,7 @@ class AddressAdmin(admin.ModelAdmin):
     list_per_page = 15
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('content_object').prefetch_related('content_type')
+        return super().get_queryset(request).prefetch_related('content_object').select_related('content_type')
 
     @admin.display(description='full_name')
     def get_full_name(self, address):

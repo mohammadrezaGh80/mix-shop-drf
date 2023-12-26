@@ -1,11 +1,10 @@
 from django.core.management import BaseCommand
 from django.db import transaction
-from django.utils import timezone
-from django.core.management.base import BaseCommand
 
 import random
 from faker import Faker
 from datetime import datetime, timedelta
+from datetime import timezone
 
 from store.models import Address, Customer, Category, Product, Comment, Seller, Cart, CartItem, Order, OrderItem
 from store.factories import (
@@ -68,6 +67,9 @@ class Command(BaseCommand):
                 gender=seller.gender,
                 birth_date=seller.birth_date
             )
+            seller.status = Seller.SELLER_STATUS_ACCEPTED
+            seller.save()
+            
             all_customers.append(customer)
             all_sellers.append(seller)
 
@@ -96,7 +98,7 @@ class Command(BaseCommand):
                 category_id=random.choice(all_categories).id, 
                 seller_id=random.choice(all_sellers).id
             )
-            product.created_datetime = datetime(random.randrange(2019, 2023),random.randint(1,12),random.randint(1,12), tzinfo=timezone.utc)
+            product.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12),day=random.randint(1,28), tzinfo=timezone.utc)
             product.modified_datetime = product.created_datetime + timedelta(hours=random.randint(1, 500))
             product.save()
             all_products.append(product)
@@ -111,7 +113,7 @@ class Command(BaseCommand):
                     content_object = random.choice(all_customers),
                     product_id = product.id
                 )
-                comment.created_datetime = datetime(random.randrange(2019, 2023),random.randint(1,12),random.randint(1,12), tzinfo=timezone.utc)
+                comment.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12),day=random.randint(1,28), tzinfo=timezone.utc)
                 comment.modified_datetime = comment.created_datetime + timedelta(hours=random.randint(1, 500))
                 comment.save()
         
@@ -122,7 +124,7 @@ class Command(BaseCommand):
         all_carts = list()
         for _ in range(NUM_CARTS):
             cart = CartFactory()
-            cart.created_datetime = datetime(random.randrange(2019, 2023),random.randint(1,12),random.randint(1,12), tzinfo=timezone.utc)
+            cart.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12), day=random.randint(1,28), tzinfo=timezone.utc)
             cart.modified_datetime = cart.created_datetime + timedelta(hours=random.randint(1, 500))
             cart.save()
             all_carts.append(cart)
@@ -149,7 +151,7 @@ class Command(BaseCommand):
             order = OrderFactory(
                 customer_id=random.choice(all_customers).id
             )
-            order.created_datetime = datetime(random.randrange(2019, 2023),random.randint(1,12),random.randint(1,12), tzinfo=timezone.utc)
+            order.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12), day=random.randint(1,28), tzinfo=timezone.utc)
             order.modified_datetime = order.created_datetime + timedelta(hours=random.randint(1, 500))
             order.save()
             all_orders.append(order)

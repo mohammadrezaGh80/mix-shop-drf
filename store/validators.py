@@ -8,4 +8,12 @@ class PostalCodeValidator(RegexValidator):
         'Enter a valid postal code, Postal code must be 10 digits without dashes.'
     )
     code = "invalid_postal_code"
+
+
+class NationalCodeValidator(RegexValidator):
+    regex = r"^[0-9]{10}$"
+    message = _(
+        'Enter a valid national code, National code must be 10 digits.'
+    )
+    code = "invalid_national_code"
     

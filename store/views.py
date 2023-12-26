@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
+from rest_framework import generics
 
 from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
@@ -12,6 +13,7 @@ from . import serializers
 from .models import Customer, Address
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter
+from .permissions import IsCustomerOrSeller
 
 
 class CustomerViewSet(ModelViewSet):
@@ -84,3 +86,15 @@ class AddressViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {'customer_pk': self.customer.pk}
     
+
+
+class RequestSellerGenericAPIView(generics.GenericAPIView):
+    serializer_class = serializers.RequestSellerSerializer
+    permission_classes = [IsAuthenticated, IsCustomerOrSeller]
+    
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        serializer = self.serializer_class(data=request.data, context={'request': request, 'user': user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'detail': 'Your request has been successfully registered.'}, status=status.HTTP_200_OK)

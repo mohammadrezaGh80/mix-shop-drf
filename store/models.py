@@ -3,12 +3,12 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.core.exceptions import ValidationError
 
 from uuid import uuid4
 
-from .validators import PostalCodeValidator
+from .validators import PostalCodeValidator, NationalCodeValidator
 
 
 class Address(models.Model):
@@ -78,8 +78,22 @@ class Customer(Person):
 
 
 class Seller(Person):
+    SELLER_STATUS_WAITING = "w"
+    SELLER_STATUS_ACCEPTED = "a"
+    SELLER_STATUS_REJECTED = "r" 
+
+    SELLER_STATUS = [
+        (SELLER_STATUS_WAITING, _('Waiting')),
+        (SELLER_STATUS_ACCEPTED, _('Accepted')),
+        (SELLER_STATUS_REJECTED, _('Rejected'))
+    ]
+
+    national_code_validator = NationalCodeValidator()
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller", verbose_name=_("User"))
-    cv = models.FileField(upload_to="store/cv_files/", blank=True, null=True, verbose_name=_("CV"))
+    cv = models.FileField(upload_to="store/cv_files/", blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['pdf'])], verbose_name=_("CV"))
+    national_code = models.CharField(max_length=10, unique=True, validators=[national_code_validator], verbose_name=_("National code"))
+    status = models.CharField(max_length=1, choices=SELLER_STATUS ,default=SELLER_STATUS_WAITING, verbose_name=_("Status"))
 
     addresses = GenericRelation(Address, related_query_name="seller")
     comments = GenericRelation('Comment', related_query_name="seller")
@@ -163,7 +177,7 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"Created at {self.created_datetime}"
-    
+
     class Meta:
         verbose_name = _("Cart")
         verbose_name_plural = _("Carts")

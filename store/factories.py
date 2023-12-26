@@ -63,6 +63,15 @@ class SellerFactory(DjangoModelFactory):
     last_name = factory.Faker("last_name")
     birth_date = factory.LazyFunction(lambda: faker.date_time_ad(start_datetime=datetime(1980, 1, 1), end_datetime=datetime(2014, 1, 1)))
     gender = factory.LazyFunction(lambda: random.choice([models.Customer.PERSON_GENDER_MALE, models.Customer.PERSON_GENDER_FEMALE]))
+    national_code = factory.Sequence(lambda n: "%010d" % n)
+    
+    @classmethod
+    def _setup_next_sequence(cls):
+        try:
+            seller = models.Seller.objects.latest("id")
+            return int(seller.national_code) + 1
+        except models.Seller.DoesNotExist:
+            return 1
 
 
 class CategoryFactory(DjangoModelFactory):
