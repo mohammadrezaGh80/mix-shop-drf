@@ -11,7 +11,7 @@ from .models import Customer, Address, Seller
 User = get_user_model()
 
 
-class AddressSerializer(serializers.ModelSerializer):
+class AddressCustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
@@ -23,48 +23,46 @@ class AddressSerializer(serializers.ModelSerializer):
         return Address.objects.create(content_object=customer, **validated_data)
 
 
+class AddressSellerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = ['id', 'province', 'city', 'plaque', 'postal_code']
+    
+    def create(self, validated_data):
+        seller_pk = self.context.get('seller_pk')
+        seller = get_object_or_404(Seller, pk=seller_pk)
+        return Address.objects.create(content_object=seller, **validated_data)
+
+
 class CustomerSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.phone')
-    profile_image_url = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
 
     class Meta:
         model = Customer
-        fields = ['id', 'user', 'first_name', 'last_name', 'gender', 'profile_image_url', 'age']
+        fields = ['id', 'user', 'first_name', 'last_name', 
+                  'profile_image', 'gender', 'age']
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['gender'] = instance.get_gender_display()
         return representation
-
-    def get_profile_image_url(self, customer):
-        request = self.context.get('request')
-        if customer.profile_image:
-            return request.build_absolute_uri(customer.profile_image.url)
-        return None
     
     def get_age(self, customer):
         if customer.birth_date:
             return (date.today() - customer.birth_date).days // 365
         return None
 
-class CustomerCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Customer
-        fields = ['id', 'user', 'profile_image', 'first_name', 
-                  'last_name', 'gender', 'birth_date']
-
 
 class CustomerDetailSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.phone', read_only=True)
-    profile_image_url = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
-    addresses = AddressSerializer(many=True, read_only=True)
+    addresses = AddressCustomerSerializer(many=True, read_only=True)
 
     class Meta:
         model = Customer
-        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image_url', 
+        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image', 
                   'age', 'birth_date', 'gender', 'wallet_amount', 'addresses']
         read_only_fields = ['wallet_amount']
 
@@ -72,12 +70,6 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['gender'] = instance.get_gender_display()
         return representation
-    
-    def get_profile_image_url(self, customer):
-        request = self.context.get('request')
-        if customer.profile_image:
-            return request.build_absolute_uri(customer.profile_image.url)
-        return None
     
     def get_age(self, customer):
         if customer.birth_date:
@@ -127,3 +119,80 @@ class RequestSellerSerializer(serializers.ModelSerializer):
         user = self.context.get('user')
         validated_data['user'] = user
         return super().create(validated_data)
+
+
+class SellerSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.phone', read_only=True)
+    age = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Seller
+        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image',
+                  'national_code', 'gender', 'age']
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['gender'] = instance.get_gender_display()
+        return representation
+    
+    def get_age(self, seller):
+        if seller.birth_date:
+            return (date.today() - seller.birth_date).days // 365
+        return None 
+    
+
+class SellerCreateSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(max_length=255)
+    last_name = serializers.CharField(max_length=255)
+    birth_date = serializers.DateField()
+    cv = serializers.FileField(validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
+                               help_text=_('CV file size should be less than or equal to 5 megabytes.'))
+
+    class Meta:
+        model = Seller
+        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image',
+                  'national_code', 'birth_date', 'gender', 'cv']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['gender'] = instance.get_gender_display()
+        return representation
+    
+
+class SellerDetailSerializer(serializers.ModelSerializer):
+    age = serializers.SerializerMethodField()
+    addresses = AddressSellerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Seller
+        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image',
+                  'national_code', 'age', 'birth_date', 'gender', 'cv', 'addresses']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['gender'] = instance.get_gender_display()
+        return representation
+    
+    def get_age(self, seller):
+        if seller.birth_date:
+            return (date.today() - seller.birth_date).days // 365
+        return None 
+
+
+class SellerListRequestsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Seller
+        fields = ['id', 'first_name', 'last_name', 'cv']
+
+
+class SellerChangeStatusSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Seller
+        fields = ['status']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['status'] = instance.get_status_display()
+        return representation

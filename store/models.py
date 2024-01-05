@@ -16,7 +16,7 @@ class Address(models.Model):
 
     content_type = models.ForeignKey(
         ContentType, 
-        on_delete=models.PROTECT, 
+        on_delete=models.CASCADE, 
         limit_choices_to=models.Q(app_label="store", model="customer") | models.Q(app_label="store", model="seller")
     )
     object_id = models.PositiveIntegerField()

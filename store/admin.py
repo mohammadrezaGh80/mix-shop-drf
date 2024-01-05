@@ -9,6 +9,8 @@ from django.utils.http import urlencode
 from django.utils.html import format_html
 from django.contrib.contenttypes.models import ContentType
 
+from datetime import date
+
 from .models import Customer, Seller, Category, Product, Address, Comment, Cart, CartItem, Order, OrderItem, Person
 
 
@@ -64,7 +66,7 @@ class InventoryFilter(admin.SimpleListFilter):
 # Custom admin 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['get_phone', 'first_name', 'last_name', 'wallet_amount', 'gender', 'num_of_comments', 'num_of_addresses']
+    list_display = ['get_phone', 'first_name', 'last_name', 'wallet_amount', 'get_age', 'gender', 'num_of_comments', 'num_of_addresses']
     list_editable = ['gender']
     list_per_page = 15
     list_filter = [GenderFilter]
@@ -104,6 +106,12 @@ class CustomerAdmin(admin.ModelAdmin):
     @admin.display(description='phone', ordering='user__phone')
     def get_phone(self, customer):
         return customer.user.phone
+    
+    @admin.display(description='age', ordering='birth_date')
+    def get_age(self, customer):
+        if customer.birth_date:
+            return (date.today() - customer.birth_date).days // 365
+        return None 
 
 
 @admin.register(Seller)
