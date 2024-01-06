@@ -10,10 +10,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
 
 from . import serializers
-from .models import Customer, Address, Seller
+from .models import Category, Customer, Address, Seller
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, SellerFilter
-from .permissions import IsCustomerOrSeller, IsSeller
+from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly
 
 
 class CustomerViewSet(ModelViewSet):
@@ -99,11 +99,18 @@ class RequestSellerGenericAPIView(generics.GenericAPIView):
 
 
 class SellerViewSet(ModelViewSet):
-    queryset = Seller.objects.all().select_related('user').prefetch_related('addresses').order_by('-id')
+    queryset = Seller.objects.all().select_related('user').order_by('-id')
     permission_classes = [IsAdminUser]
     pagination_class = CustomLimitOffsetPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = SellerFilter
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.action == 'retrieve':
+            return queryset.prefetch_related('products').prefetch_related('addresses')
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -116,7 +123,7 @@ class SellerViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.products.count() >= 0:
-            return Response({'error': 'There is some products relating this seller. Please remove them first.'})
+            return Response({'detail': 'There is some products relating this seller. Please remove them first.'})
         
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -201,3 +208,23 @@ class SellerListRequestsViewSet(ModelViewSet):
             instance.delete()        
         
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    permission_classes = [IsAdminUserOrReadOnly]
+    pagination_class = CustomLimitOffsetPagination
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return serializers.CategoryDetailSerializer
+        return serializers.CategorySerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        if instance.products.count() > 0:
+            return Response({'detail': 'There is some products relating this category. Please remove them first.'})
+        
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -10,6 +10,7 @@ router = DefaultRouter()
 router.register('customers', views.CustomerViewSet, basename='customer')
 router.register('sellers', views.SellerViewSet, basename='seller')
 router.register('list-requests', views.SellerListRequestsViewSet, basename='list-requests')
+router.register('categories', views.CategoryViewSet, basename='category')
 
 customers_router = routers.NestedDefaultRouter(router, 'customers', lookup='customer')
 customers_router.register('addresses', views.AddressCustomerViewSet, basename='customer-addresses')

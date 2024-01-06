@@ -6,7 +6,7 @@ from django.core.validators import FileExtensionValidator
 
 from datetime import date
 
-from .models import Customer, Address, Seller
+from .models import Category, Customer, Address, Seller
 
 User = get_user_model()
 
@@ -162,11 +162,12 @@ class SellerCreateSerializer(serializers.ModelSerializer):
 class SellerDetailSerializer(serializers.ModelSerializer):
     age = serializers.SerializerMethodField()
     addresses = AddressSellerSerializer(many=True, read_only=True)
+    products_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Seller
         fields = ['id', 'user', 'first_name', 'last_name', 'profile_image',
-                  'national_code', 'age', 'birth_date', 'gender', 'cv', 'addresses']
+                  'national_code', 'age', 'birth_date', 'gender', 'cv', 'products_count', 'addresses']
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -177,6 +178,9 @@ class SellerDetailSerializer(serializers.ModelSerializer):
         if seller.birth_date:
             return (date.today() - seller.birth_date).days // 365
         return None 
+    
+    def get_products_count(self, seller):
+        return seller.products.count()
 
 
 class SellerListRequestsSerializer(serializers.ModelSerializer):
@@ -196,3 +200,22 @@ class SellerChangeStatusSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['status'] = instance.get_status_display()
         return representation
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ['id', 'title']
+    
+
+class CategoryDetailSerializer(serializers.ModelSerializer):
+    products_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = ['id', 'title', 'products_count']
+    
+    def get_products_count(self, category):
+        return category.products.count()
+    
