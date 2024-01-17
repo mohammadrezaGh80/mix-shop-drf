@@ -58,6 +58,10 @@ class Person(models.Model):
     profile_image = models.ImageField(upload_to="store/profile_images/", blank=True, null=True, verbose_name=_("Profile image"))
     gender = models.CharField(max_length=1, choices=PERSON_GENDER, blank=True, verbose_name=_("Gender"))
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
     

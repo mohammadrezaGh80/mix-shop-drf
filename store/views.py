@@ -5,15 +5,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
 from rest_framework import generics
+from django.db.models import Prefetch
 
 from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
 
 from . import serializers
-from .models import Category, Customer, Address, Seller
+from .models import Category, Comment, Customer, Address, Product, Seller
 from .paginations import CustomLimitOffsetPagination
-from .filters import CustomerFilter, SellerFilter
-from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly
+from .filters import CustomerFilter, SellerFilter, ProductFilter
+from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner
 
 
 class CustomerViewSet(ModelViewSet):
@@ -108,7 +109,7 @@ class SellerViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        if self.action == 'retrieve':
+        if self.action =='retrieve':
             return queryset.prefetch_related('products').prefetch_related('addresses')
         return queryset
 
@@ -131,7 +132,7 @@ class SellerViewSet(ModelViewSet):
     @action(detail=False, methods=['GET', 'PUT', 'PATCH', 'DELETE'], permission_classes=[IsSeller])
     def me(self, request, *args, **kwargs):
         user = request.user
-        seller = self.queryset.get(id=user.seller.id)
+        seller = self.queryset.prefetch_related('products').prefetch_related('addresses').get(id=user.seller.id)
 
         if request.method == 'GET':
             serializer = serializers.SellerDetailSerializer(seller, context=self.get_serializer_context())
@@ -145,6 +146,8 @@ class SellerViewSet(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == 'DELETE':
+            if seller.products.count() > 0:
+                return Response({'detail': 'There is some products relating to you. Please remove them first.'})
             seller.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         
@@ -228,3 +231,42 @@ class CategoryViewSet(ModelViewSet):
         
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.select_related('seller').select_related('category').order_by('-created_datetime')
+    pagination_class = CustomLimitOffsetPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductFilter
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        if self.action == 'retrieve':
+            return queryset.prefetch_related(
+                Prefetch('comments',
+                queryset=Comment.objects.prefetch_related('content_object').filter(status=Comment.COMMENT_STATUS_APPROVED))
+            )
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.ProductSerializer
+        elif self.action == 'retrieve':
+            return serializers.ProductDetailSerializer
+        return serializers.ProductCreateSerializer
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAdminUserOrSeller()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminUserOrSellerOwner()]
+        return super().get_permissions()
+
+
+class CommentViewSet(ModelViewSet):
+    serializer_class = serializers.CommentSerializer
+
+    def get_queryset(self):
+        product_pk = self.kwargs.get('product_pk')
+        return Comment.objects.prefetch_related('content_object').filter(product_id=product_pk, status=Comment.COMMENT_STATUS_APPROVED)

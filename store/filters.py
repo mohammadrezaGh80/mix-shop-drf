@@ -1,10 +1,10 @@
 import django_filters
-from django.db.models import F, IntegerField, ExpressionWrapper
 from django.utils.translation import gettext_lazy as _
+from django.db import models
 
 from datetime import date, timedelta
 
-from .models import Customer, Seller
+from .models import Customer, Product, Seller
 
 
 class CustomerFilter(django_filters.FilterSet):
@@ -64,4 +64,18 @@ class SellerFilter(CustomerFilter):
 
     class Meta:
         model = Seller
+        fields = []
+
+
+class ProductFilter(django_filters.FilterSet):
+    price_min = django_filters.NumberFilter(field_name='price', lookup_expr='gte', label='price_min')
+    price_max = django_filters.NumberFilter(field_name='price', lookup_expr='lte', label='price_max')
+    has_inventory = django_filters.BooleanFilter(field_name='inventory', method='filter_has_inventory', label='has_inventory')
+
+    def filter_has_inventory(self, queryset, field_name, value):
+        filter_condition = {f'{field_name}__gte': 1} if value else {f'{field_name}': 0}
+        return queryset.filter(**filter_condition)
+
+    class Meta:
+        model = Product
         fields = []

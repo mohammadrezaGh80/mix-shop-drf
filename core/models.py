@@ -9,6 +9,7 @@ import random
 import string
 
 from .validators import PhoneValidator
+from .signals import superuser_created
 
 
 class CustomUserManager(BaseUserManager):
@@ -45,6 +46,7 @@ class CustomUserManager(BaseUserManager):
             **extra_fields
         )
         user.is_superuser = True
+        superuser_created.send_robust(self.__class__, instance=user)
         user.is_staff = True
         user.save(using=self._db)
         return user

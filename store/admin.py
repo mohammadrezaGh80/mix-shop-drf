@@ -116,7 +116,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Seller)
 class SellerAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'national_code', 'gender', 'status', 'num_of_addresses']
+    list_display = ['id', 'first_name', 'last_name', 'national_code', 'gender', 'status', 'num_of_addresses']
     list_editable = ['gender']
     list_per_page = 10
     list_filter = [GenderFilter]
@@ -156,6 +156,7 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {
         'slug': ['title']
     }
+    search_fields = ['title']
 
     def get_queryset(self, request):
         return super().get_queryset(request)\
@@ -194,6 +195,7 @@ class AddressAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['product']
     
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('content_object')

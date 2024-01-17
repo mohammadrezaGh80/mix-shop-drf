@@ -3,10 +3,11 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from django.core.validators import FileExtensionValidator
+from django.utils.text import slugify
 
 from datetime import date
 
-from .models import Category, Customer, Address, Seller
+from .models import Category, Comment, Customer, Address, Seller, Product
 
 User = get_user_model()
 
@@ -160,6 +161,7 @@ class SellerCreateSerializer(serializers.ModelSerializer):
     
 
 class SellerDetailSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.phone', read_only=True)
     age = serializers.SerializerMethodField()
     addresses = AddressSellerSerializer(many=True, read_only=True)
     products_count = serializers.SerializerMethodField()
@@ -219,3 +221,92 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
     def get_products_count(self, category):
         return category.products.count()
     
+
+class CommentObjectRelatedField(serializers.RelatedField):
+    """
+    A custom field to use for the `content_object` generic relationship.
+    """
+
+    def to_representation(self, value):
+        if isinstance(value, Customer):
+            return value.full_name
+        elif isinstance(value, Seller):
+            return value.full_name
+        raise Exception('Unexpected type of comment object')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = CommentObjectRelatedField(source='content_object', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'title', 'body', 'status']
+        read_only_fields = ['status']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['status'] = instance.get_status_display()
+        return representation
+    
+
+class ProductSellerSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.phone', read_only=True)
+
+    class Meta:
+        model = Seller
+        fields = ['id', 'user', 'first_name', 'last_name', 'gender']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['gender'] = instance.get_gender_display()
+        return representation
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    seller = serializers.CharField(source='seller.full_name', read_only=True)
+    category = serializers.CharField(source='category.title', read_only=True)
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title','slug' ,'category', 'seller' ,'price', 'status']
+
+    def get_status(self, product):
+        return 'Available' if product.inventory > 0 else 'Unavailable'
+
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    seller = ProductSellerSerializer()
+    status = serializers.SerializerMethodField()
+    comments = CommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title','slug' ,'category', 'seller' ,'price', 'status', 'inventory', 'description', 'comments']
+
+    def get_status(self, product):
+        return 'Available' if product.inventory > 0 else 'Unavailable'
+
+
+class ProductCreateSerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title', 'slug', 'category',
+                  'price', 'inventory', 'description']
+    
+    def create(self, validated_data):
+        request = self.context.get('request')
+        product = Product(**validated_data)
+        product.slug = slugify(product.title)
+        product.seller = request.user.seller
+        product.save()
+        return product
+    
+    def update(self, instance, validated_data):
+        title = validated_data.get('title')
+        instance.slug = slugify(title)
+        instance.save()
+        return super().update(instance, validated_data)
