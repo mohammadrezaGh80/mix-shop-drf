@@ -87,7 +87,7 @@ class RequestSellerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Seller
-        fields = ['id', 'first_name', 'last_name', 'birth_date', 'gender',
+        fields = ['id', 'first_name', 'last_name', 'company_name', 'birth_date', 'gender',
                   'national_code', 'cv']
         read_only_fields = ['id']
         
@@ -123,12 +123,11 @@ class RequestSellerSerializer(serializers.ModelSerializer):
 
 
 class SellerSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.phone', read_only=True)
     age = serializers.SerializerMethodField()
 
     class Meta:
         model = Seller
-        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image',
+        fields = ['id', 'company_name', 'first_name', 'last_name', 'profile_image',
                   'national_code', 'gender', 'age']
         
     def to_representation(self, instance):
@@ -151,7 +150,7 @@ class SellerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seller
-        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image',
+        fields = ['id', 'user', 'company_name', 'first_name', 'last_name', 'profile_image',
                   'national_code', 'birth_date', 'gender', 'cv']
     
     def to_representation(self, instance):
@@ -159,17 +158,24 @@ class SellerCreateSerializer(serializers.ModelSerializer):
         representation['gender'] = instance.get_gender_display()
         return representation
     
+    def validate_gender(self, gender):
+        if gender not in [Seller.PERSON_GENDER_MALE, Seller.PERSON_GENDER_FEMALE]:
+            raise serializers.ValidationError(
+                _("Please choose your gender.")
+            )
+        return gender
+    
 
 class SellerDetailSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.phone', read_only=True)
     age = serializers.SerializerMethodField()
     addresses = AddressSellerSerializer(many=True, read_only=True)
     products_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Seller
-        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image',
+        fields = ['id', 'company_name', 'first_name', 'last_name', 'profile_image',
                   'national_code', 'age', 'birth_date', 'gender', 'cv', 'products_count', 'addresses']
+        read_only_fields = ['company_name', 'cv', 'national_code']
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -189,7 +195,7 @@ class SellerListRequestsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seller
-        fields = ['id', 'first_name', 'last_name', 'cv']
+        fields = ['id', 'first_name', 'last_name', 'company_name', 'cv']
 
 
 class SellerChangeStatusSerializer(serializers.ModelSerializer):
@@ -227,11 +233,11 @@ class CommentObjectRelatedField(serializers.RelatedField):
     A custom field to use for the `content_object` generic relationship.
     """
 
-    def to_representation(self, value):
-        if isinstance(value, Customer):
-            return value.full_name
-        elif isinstance(value, Seller):
-            return value.full_name
+    def to_representation(self, instance):
+        if isinstance(instance, Customer):
+            return instance.full_name if instance.full_name.strip() else 'Unknown'
+        elif isinstance(instance, Seller):
+            return instance.company_name 
         raise Exception('Unexpected type of comment object')
 
 
@@ -250,11 +256,10 @@ class CommentSerializer(serializers.ModelSerializer):
     
 
 class ProductSellerSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.phone', read_only=True)
 
     class Meta:
         model = Seller
-        fields = ['id', 'user', 'first_name', 'last_name', 'gender']
+        fields = ['id', 'first_name', 'last_name', 'company_name', 'gender']
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -263,7 +268,7 @@ class ProductSellerSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    seller = serializers.CharField(source='seller.full_name', read_only=True)
+    seller = serializers.CharField(source='seller.company_name', read_only=True)
     category = serializers.CharField(source='category.title', read_only=True)
     status = serializers.SerializerMethodField()
 

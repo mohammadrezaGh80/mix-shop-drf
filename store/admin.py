@@ -116,7 +116,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Seller)
 class SellerAdmin(admin.ModelAdmin):
-    list_display = ['id', 'first_name', 'last_name', 'national_code', 'gender', 'status', 'num_of_addresses']
+    list_display = ['company_name', 'first_name', 'last_name', 'national_code', 'gender', 'status', 'num_of_addresses']
     list_editable = ['gender']
     list_per_page = 10
     list_filter = [GenderFilter]
@@ -203,19 +203,35 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['id', 'created_datetime']
+    readonly_fields = ['id']
+    search_fields = ['id']
+    list_per_page = 15
 
 
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
-    list_select_related = ['product']
+    list_display = ['cart_id', 'product', 'quantity']
+    list_select_related = ['cart', 'product']
+    autocomplete_fields = ['cart', 'product']
+    list_per_page = 15
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    list_display = ['customer', 'status', 'created_datetime']
     list_select_related = ['customer']
+    search_fields = ['id']
+    list_per_page = 15
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_select_related = ['product']
+    list_display = ['order_customer', 'order', 'product', 'quantity', 'price']
+    list_select_related = ['order__customer', 'product']
+    autocomplete_fields = ['order', 'product']
+    list_per_page = 15
+
+    @admin.display(description="order's customer", ordering='order__customer__first_name')
+    def order_customer(self, order_item):
+        return order_item.order.customer

@@ -14,4 +14,4 @@ def create_customer_for_newly_created_user(sender, instance, created, **kwargs):
 
 @receiver(superuser_created)
 def create_seller_for_newly_created_superuser(sender, instance, **kwargs):
-    Seller.objects.create(user=instance, status=Seller.SELLER_STATUS_ACCEPTED)
+    Seller.objects.create(user=instance, company_name='Mix shop', status=Seller.SELLER_STATUS_ACCEPTED)

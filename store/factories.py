@@ -60,6 +60,7 @@ class SellerFactory(DjangoModelFactory):
 
     user = factory.SubFactory(CustomUserFactory)
     first_name = factory.LazyAttribute(lambda o: o.user.email.split('@')[0].strip(string.digits))
+    company_name = factory.LazyFunction(lambda: faker.sentence(nb_words=3, variable_nb_words=True)[:-1])
     last_name = factory.Faker("last_name")
     birth_date = factory.LazyFunction(lambda: faker.date_time_ad(start_datetime=datetime(1980, 1, 1), end_datetime=datetime(2014, 1, 1)))
     gender = factory.LazyFunction(lambda: random.choice([models.Customer.PERSON_GENDER_MALE, models.Customer.PERSON_GENDER_FEMALE]))

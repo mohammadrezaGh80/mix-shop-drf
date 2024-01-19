@@ -95,6 +95,7 @@ class Seller(Person):
     national_code_validator = NationalCodeValidator()
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller", verbose_name=_("User"))
+    company_name = models.CharField(max_length=100, verbose_name=_("Company name"))
     cv = models.FileField(upload_to="store/cv_files/", blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['pdf'])], verbose_name=_("CV"))
     national_code = models.CharField(max_length=10, unique=True, validators=[national_code_validator], verbose_name=_("National code"))
     status = models.CharField(max_length=1, choices=SELLER_STATUS ,default=SELLER_STATUS_WAITING, verbose_name=_("Status"))
@@ -166,7 +167,7 @@ class Comment(models.Model):
 
 
     def __str__(self):
-        return f"{self.title}({self.content_object})"
+        return f"{self.title}({self.content_object if self.content_object.full_name.strip() else 'Unknown'})" # TODO
     
     class Meta:
         verbose_name = _("Comment")
@@ -180,7 +181,7 @@ class Cart(models.Model):
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
     def __str__(self):
-        return f"Created at {self.created_datetime}"
+        return f"{self.id}"
 
     class Meta:
         verbose_name = _("Cart")
@@ -221,7 +222,7 @@ class Order(models.Model):
 
 
     def __str__(self):
-        return f"Order {self.id}(Customer: {self.customer})"
+        return f"Order {self.id}"
     
     class Meta:
         verbose_name = _("Order")
@@ -229,7 +230,7 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="items", verbose_name=_("Cart"))
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="items", verbose_name=_("Order"))
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="order_items", verbose_name=_("Product"))
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
     price = models.PositiveIntegerField(verbose_name=_("Price"))
