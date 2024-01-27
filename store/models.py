@@ -61,9 +61,6 @@ class Person(models.Model):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
     
     class Meta:
         abstract = True
@@ -75,6 +72,9 @@ class Customer(Person):
 
     addresses = GenericRelation(Address, related_query_name="customer")
     comments = GenericRelation('Comment', related_query_name="customer")
+
+    def __str__(self):
+        return self.full_name if self.full_name.strip() else 'Unknown'
 
     class Meta:
         verbose_name = _("Customer")
@@ -103,6 +103,9 @@ class Seller(Person):
     addresses = GenericRelation(Address, related_query_name="seller")
     comments = GenericRelation('Comment', related_query_name="seller")
 
+    def __str__(self):
+        return self.company_name
+
     class Meta:
         verbose_name = _("Seller")
         verbose_name_plural = _("Sellers")
@@ -130,6 +133,12 @@ class Product(models.Model):
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
+    
+    def get_comments(self):
+        """
+        Returns a queryset of approved comments related to this product.
+        """
+        return Comment.objects.select_related('content_type', 'reply_to').filter(product=self, status=Comment.COMMENT_STATUS_APPROVED).order_by('-created_datetime')
 
     def __str__(self):
         return self.title
@@ -152,7 +161,7 @@ class Comment(models.Model):
     content_type = models.ForeignKey(
         ContentType, 
         on_delete=models.PROTECT, 
-        limit_choices_to=models.Q(app_label="store", model="customer") | models.Q(app_label="store", model="seller") # TODO: is need seller?
+        limit_choices_to=models.Q(app_label="store", model="customer") | models.Q(app_label="store", model="seller")
     )
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
@@ -161,13 +170,14 @@ class Comment(models.Model):
     title = models.CharField(max_length=255, blank=True, verbose_name=_("Title"))
     body = models.TextField(verbose_name=_("Body"))
     status = models.CharField(max_length=2, choices=COMMENT_STATUS, default=COMMENT_STATUS_WAITING, verbose_name=_("Status"))
+    reply_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies', verbose_name=_("Reply to"))
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
 
     def __str__(self):
-        return f"{self.title}({self.content_object if self.content_object.full_name.strip() else 'Unknown'})" # TODO
+        return f"{self.title}({self.body[:15] + '...' if len(self.body) > 15 else self.body})"
     
     class Meta:
         verbose_name = _("Comment")

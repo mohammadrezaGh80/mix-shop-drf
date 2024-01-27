@@ -2,6 +2,7 @@ from typing import Any
 from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
+from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 from django.db.models import Count
 from django.urls import reverse
@@ -195,10 +196,14 @@ class AddressAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['product']
+    list_display = ['id', 'title', 'content_object', 'product', 'status', 'reply_to', 'created_datetime']
+    autocomplete_fields = ['product', 'reply_to']
+    ordering = ['-created_datetime']
+    search_fields = ['title']
+    list_per_page = 15
     
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('content_object')
+        return super().get_queryset(request).prefetch_related('content_object').select_related('product')
 
 
 @admin.register(Cart)

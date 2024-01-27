@@ -239,20 +239,33 @@ class CommentObjectRelatedField(serializers.RelatedField):
         elif isinstance(instance, Seller):
             return instance.company_name 
         raise Exception('Unexpected type of comment object')
-
+    
 
 class CommentSerializer(serializers.ModelSerializer):
     user = CommentObjectRelatedField(source='content_object', read_only=True)
+    user_type = serializers.SerializerMethodField()
+    # replies = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'title', 'body', 'status']
-        read_only_fields = ['status']
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['status'] = instance.get_status_display()
-        return representation
+        fields = ['id', 'user', 'user_type', 'title', 'body', 'reply_to']
+        extra_kwargs = {
+            'reply_to': {'write_only': True}
+        }
+    
+    def get_user_type(self, comment):
+        return comment.content_type.model_class().__name__
+    
+    # def get_replies(self, comment):
+    #     serializer = CommentSerializer(comment.replies, many=True)
+    #     return serializer.data
+    
+    def create(self, validated_data):
+        product_pk = self.context.get('product_pk')
+        user = self.context.get('user')
+        validated_data['product_id'] = product_pk
+        validated_data['content_object'] = user
+        return super().create(validated_data)
     
 
 class ProductSellerSerializer(serializers.ModelSerializer):
@@ -315,3 +328,28 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         instance.slug = slugify(title)
         instance.save()
         return super().update(instance, validated_data)
+
+
+class CommentListWaitingSerializer(serializers.ModelSerializer):
+    user = CommentObjectRelatedField(source='content_object', read_only=True)
+    user_type = serializers.SerializerMethodField()
+    product = serializers.CharField(source='product.title')
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'product', 'user', 'user_type', 'title', 'body']
+    
+    def get_user_type(self, comment):
+        return comment.content_type.model_class().__name__
+
+
+class CommentChangeStatusSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = ['status']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['status'] = instance.get_status_display()
+        return representation

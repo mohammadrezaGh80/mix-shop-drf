@@ -53,3 +53,23 @@ class IsAdminUserOrSellerOwner(permissions.BasePermission):
             request.user.seller.status == Seller.SELLER_STATUS_ACCEPTED and
             request.user.seller == obj.seller
         )
+
+
+class IsAdminUserOrCommentOwner(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.user and request.user.is_authenticated and
+            request.user.is_staff or
+            request.user and request.user.is_authenticated and
+            getattr(request.user, 'seller', request.user.customer) == obj.content_object
+        )
+    
+
+class IsCommentOwner(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.user and request.user.is_authenticated and
+            getattr(request.user, 'seller', request.user.customer) == obj.content_object
+        )

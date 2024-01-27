@@ -14,7 +14,7 @@ from . import serializers
 from .models import Category, Comment, Customer, Address, Product, Seller
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, SellerFilter, ProductFilter
-from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner
+from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner
 
 
 class CustomerViewSet(ModelViewSet):
@@ -245,7 +245,7 @@ class ProductViewSet(ModelViewSet):
         if self.action == 'retrieve':
             return queryset.prefetch_related(
                 Prefetch('comments',
-                queryset=Comment.objects.prefetch_related('content_object').filter(status=Comment.COMMENT_STATUS_APPROVED))
+                queryset=Comment.objects.prefetch_related('content_object').select_related('content_type').filter(status=Comment.COMMENT_STATUS_APPROVED, reply_to__isnull=True))
             )
         return queryset
 
@@ -265,8 +265,52 @@ class ProductViewSet(ModelViewSet):
 
 
 class CommentViewSet(ModelViewSet):
+    http_method_names = ['get', 'head', 'options', 'post', 'delete', 'patch']
     serializer_class = serializers.CommentSerializer
 
     def get_queryset(self):
         product_pk = self.kwargs.get('product_pk')
-        return Comment.objects.prefetch_related('content_object').filter(product_id=product_pk, status=Comment.COMMENT_STATUS_APPROVED)
+        product = Product.objects.get(pk=product_pk)
+        return product.get_comments().prefetch_related('comments')
+    
+    def get_serializer_context(self):
+        if self.action == 'create':
+            user = self.request.user
+            user_role = getattr(user, 'seller', user.customer)
+            return {'product_pk': self.kwargs.get('product_pk'),
+                    'user': user_role}
+        return super().get_serializer_context()
+    
+    def get_permissions(self):
+        if self.action in ['retrieve', 'destroy']:
+            return [IsAdminUserOrCommentOwner()]
+        elif self.action == 'partial_update':
+            return [IsCommentOwner()]
+        elif self.action == 'create':
+            return [IsAuthenticated()]
+        return super().get_permissions()
+    
+
+class CommentListWaitingViewSet(ModelViewSet):
+    http_method_names = ['get', 'head', 'options', 'patch']
+    queryset = Comment.objects.prefetch_related('content_object').select_related('content_type').select_related('product').filter(status=Comment.COMMENT_STATUS_WAITING).order_by('-created_datetime')
+    permission_classes = [IsAdminUser]
+    pagination_class = CustomLimitOffsetPagination
+
+    def get_serializer_class(self):
+        if self.action == 'partial_update':
+            return serializers.CommentChangeStatusSerializer
+        return serializers.CommentListWaitingSerializer
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        comment_status = serializer.validated_data.get('status')
+        serializer.save()
+        
+        if comment_status == Comment.COMMENT_STATUS_NOT_APPROVED:
+            instance.delete()        
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
