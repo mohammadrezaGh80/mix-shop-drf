@@ -39,6 +39,7 @@ class CustomUserManager(BaseUserManager):
         """
         Creates and saves a superuser with the given phone, email and password.
         """
+        national_code = extra_fields.pop('national_code', None)
         user = self.create_user(
             phone=phone,
             email=email,
@@ -46,7 +47,7 @@ class CustomUserManager(BaseUserManager):
             **extra_fields
         )
         user.is_superuser = True
-        superuser_created.send_robust(self.__class__, instance=user)
+        superuser_created.send_robust(self.__class__, instance=user, national_code=national_code)
         user.is_staff = True
         user.save(using=self._db)
         return user

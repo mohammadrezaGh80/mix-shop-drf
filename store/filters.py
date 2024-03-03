@@ -23,8 +23,8 @@ class CustomerFilter(django_filters.FilterSet):
     ]
 
     age = django_filters.NumberFilter(field_name='birth_date', method='filter_age', label='age')
-    age_min = django_filters.NumberFilter(field_name='birth_date', method='filter_age_min', label='age_min')
     age_max = django_filters.NumberFilter(field_name='birth_date', method='filter_age_max', label='age_max')
+    age_min = django_filters.NumberFilter(field_name='birth_date', method='filter_age_min', label='age_min')
     gender = django_filters.ChoiceFilter(field_name='gender', choices=CUSTOMER_GENDER, method='filter_gender', label='gender')
 
     def filter_age(self, queryset, field_name, value):
@@ -60,6 +60,24 @@ class CustomerFilter(django_filters.FilterSet):
 
 
 class SellerFilter(CustomerFilter):
+
+    SELLER_GENDER_MALE = 'm'
+    SELLER_GENDER_FEMALE = 'f'
+
+    SELLER_GENDER = [
+        (SELLER_GENDER_MALE, _('Male')),
+        (SELLER_GENDER_FEMALE, _('Female')),
+    ]
+
+    gender = django_filters.ChoiceFilter(field_name='gender', choices=SELLER_GENDER, method='filter_gender', label='gender')
+
+    def filter_gender(self, queryset, field_name, value):
+        if value == self.CUSTOMER_GENDER_MALE:
+            filter_condition = {field_name: self.CUSTOMER_GENDER_MALE}
+            return queryset.filter(**filter_condition)
+        elif value == self.CUSTOMER_GENDER_FEMALE:
+            filter_condition = {field_name: self.CUSTOMER_GENDER_FEMALE}
+            return queryset.filter(**filter_condition)
 
     class Meta:
         model = Seller

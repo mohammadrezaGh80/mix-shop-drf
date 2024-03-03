@@ -19,7 +19,7 @@ from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, Is
 
 class CustomerViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'put', 'patch']
-    queryset = Customer.objects.all().select_related('user').prefetch_related('addresses').order_by('-id')
+    queryset = Customer.objects.all().select_related('user').order_by('-id')
     permission_classes = [IsAdminUser]
     pagination_class = CustomLimitOffsetPagination
     filter_backends = [DjangoFilterBackend]
@@ -28,7 +28,14 @@ class CustomerViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return serializers.CustomerSerializer
-        return serializers.CustomerDetailSerializer        
+        return serializers.CustomerDetailSerializer 
+
+    def get_queryset(self):
+        queryset = super().get_queryset()  
+
+        if self.action =='retrieve':
+            return queryset.prefetch_related('addresses')
+        return queryset
     
     @action(detail=False, methods=['GET', 'PUT', 'PATCH'], permission_classes=[IsAuthenticated])
     def me(self, request, *args, **kwargs):
@@ -73,7 +80,7 @@ class AddressCustomerViewSet(ModelViewSet):
         else:
             try:
                 customer_pk = int(customer_pk)
-                customer = Customer.objects.get(user_id=customer_pk)
+                customer = Customer.objects.get(id=customer_pk)
             except (ValueError, Customer.DoesNotExist):
                 raise Http404
 
@@ -123,7 +130,7 @@ class SellerViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        if instance.products.count() >= 0:
+        if instance.products.count() > 0:
             return Response({'detail': 'There is some products relating this seller. Please remove them first.'})
         
         instance.delete()
@@ -177,7 +184,7 @@ class AddressSellerViewSet(ModelViewSet):
         else:
             try:
                 seller_pk = int(seller_pk)
-                seller = Seller.objects.get(user_id=seller_pk)
+                seller = Seller.objects.get(id=seller_pk)
             except (ValueError, Seller.DoesNotExist):
                 raise Http404
 
@@ -262,7 +269,7 @@ class ProductViewSet(ModelViewSet):
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAdminUserOrSellerOwner()]
         return super().get_permissions()
-
+    
 
 class CommentViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'post', 'delete', 'patch']
@@ -270,15 +277,22 @@ class CommentViewSet(ModelViewSet):
 
     def get_queryset(self):
         product_pk = self.kwargs.get('product_pk')
-        product = Product.objects.get(pk=product_pk)
-        return product.get_comments().prefetch_related('comments')
+        queryset = Comment.objects.filter(
+                product_id=product_pk,
+                reply_to__isnull=True,
+                status=Comment.COMMENT_STATUS_APPROVED
+        )
+        return queryset.select_related('content_type', 'reply_to').prefetch_related('content_object')
     
     def get_serializer_context(self):
         if self.action == 'create':
             user = self.request.user
-            user_role = getattr(user, 'seller', user.customer)
+            if getattr(user, 'seller', None) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
+                user_type = user.seller
+            else:
+                user_type = user.customer
             return {'product_pk': self.kwargs.get('product_pk'),
-                    'user': user_role}
+                    'user': user_type}
         return super().get_serializer_context()
     
     def get_permissions(self):

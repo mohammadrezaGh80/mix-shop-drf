@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.utils.translation import gettext as _
 
 from .models import OTP
 
@@ -35,11 +36,7 @@ class VerifyOTPSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields[self.username_field].label = 'username'
+    username_field = 'username'
 
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -76,11 +73,22 @@ class SetPasswordSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     has_password = serializers.BooleanField(source='password', read_only=True)
+    email = serializers.EmailField()
 
     class Meta:
         model = User
         fields = ['id', 'phone', 'email', 'has_password']
         read_only_fields = ['phone']
+    
+    def validate_email(self, email):
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return email
+        else:
+            raise serializers.ValidationError(
+                _("This email is already chosen, please enter another email.")
+            )
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

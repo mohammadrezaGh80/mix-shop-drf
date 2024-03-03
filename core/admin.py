@@ -31,7 +31,7 @@ class PasswordStatusFilter(admin.SimpleListFilter):
 @admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
     model = CustomUser
-    list_display = ['phone', 'email', 'is_active']
+    list_display = ['phone', 'email', 'is_active', 'is_staff']
     list_filter = ['is_active', 'is_superuser', 'is_staff']
     fieldsets = (
         (_('Personal info'), {'fields': ('phone', 'email', 'password', )}),
@@ -46,7 +46,7 @@ class CustomUserAdmin(BaseUserAdmin):
     search_fields = ['phone', 'email']
     ordering = ['email']
     actions = ['active_users_accounts']
-    list_editable = ['is_active']
+    list_editable = ['is_active', 'is_staff']
     list_per_page = 15
     readonly_fields = ['phone', 'email']
 

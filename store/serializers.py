@@ -7,7 +7,7 @@ from django.utils.text import slugify
 
 from datetime import date
 
-from .models import Category, Comment, Customer, Address, Seller, Product
+from .models import Category, Comment, Customer, Address, Person, Seller, Product
 
 User = get_user_model()
 
@@ -82,6 +82,7 @@ class RequestSellerSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(max_length=255)
     last_name = serializers.CharField(max_length=255)
     birth_date = serializers.DateField()
+    gender = serializers.ChoiceField(choices=Person.PERSON_GENDER)
     cv = serializers.FileField(validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
                                help_text=_('CV file size should be less than or equal to 5 megabytes.'))
     
@@ -145,6 +146,8 @@ class SellerCreateSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(max_length=255)
     last_name = serializers.CharField(max_length=255)
     birth_date = serializers.DateField()
+    profile_image = serializers.ImageField()
+    gender = serializers.ChoiceField(choices=Person.PERSON_GENDER)
     cv = serializers.FileField(validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
                                help_text=_('CV file size should be less than or equal to 5 megabytes.'))
 
@@ -167,6 +170,11 @@ class SellerCreateSerializer(serializers.ModelSerializer):
     
 
 class SellerDetailSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(max_length=255)
+    last_name = serializers.CharField(max_length=255)
+    profile_image = serializers.ImageField()
+    birth_date = serializers.DateField()
+    gender = serializers.ChoiceField(choices=Person.PERSON_GENDER)
     age = serializers.SerializerMethodField()
     addresses = AddressSellerSerializer(many=True, read_only=True)
     products_count = serializers.SerializerMethodField()
@@ -189,6 +197,13 @@ class SellerDetailSerializer(serializers.ModelSerializer):
     
     def get_products_count(self, seller):
         return seller.products.count()
+    
+    def validate_gender(self, gender):
+        if gender not in [Seller.PERSON_GENDER_MALE, Seller.PERSON_GENDER_FEMALE]:
+            raise serializers.ValidationError(
+                _("Please choose your gender.")
+            )
+        return gender
 
 
 class SellerListRequestsSerializer(serializers.ModelSerializer):
@@ -235,30 +250,43 @@ class CommentObjectRelatedField(serializers.RelatedField):
 
     def to_representation(self, instance):
         if isinstance(instance, Customer):
-            return instance.full_name if instance.full_name.strip() else 'Unknown'
+            return instance.full_name if instance.full_name else 'Unknown'
         elif isinstance(instance, Seller):
             return instance.company_name 
         raise Exception('Unexpected type of comment object')
     
 
-class CommentSerializer(serializers.ModelSerializer):
-    user = CommentObjectRelatedField(source='content_object', read_only=True)
+class ReplyCommentSerializer(serializers.ModelSerializer):
+    display_name = CommentObjectRelatedField(source='content_object', read_only=True)
     user_type = serializers.SerializerMethodField()
-    # replies = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'user_type', 'title', 'body', 'reply_to']
+        fields = ['id', 'reply_to', 'display_name', 'user_type', 'title', 'body']
+    
+    def get_user_type(self, comment):
+        return comment.content_type.model_class().__name__
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    display_name = CommentObjectRelatedField(source='content_object', read_only=True)
+    user_type = serializers.SerializerMethodField()
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'display_name', 'user_type', 'title', 'body', 'reply_to', 'replies']
         extra_kwargs = {
             'reply_to': {'write_only': True}
         }
     
+    def get_replies(self, comment):
+        queryset = comment.get_all_replies(comment.pk)
+        serializer = ReplyCommentSerializer(queryset, many=True)
+        return serializer.data 
+       
     def get_user_type(self, comment):
         return comment.content_type.model_class().__name__
-    
-    # def get_replies(self, comment):
-    #     serializer = CommentSerializer(comment.replies, many=True)
-    #     return serializer.data
     
     def create(self, validated_data):
         product_pk = self.context.get('product_pk')
@@ -266,7 +294,7 @@ class CommentSerializer(serializers.ModelSerializer):
         validated_data['product_id'] = product_pk
         validated_data['content_object'] = user
         return super().create(validated_data)
-    
+   
 
 class ProductSellerSerializer(serializers.ModelSerializer):
 

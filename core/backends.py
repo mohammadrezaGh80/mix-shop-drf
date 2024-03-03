@@ -13,9 +13,6 @@ class CustomAuthBackend(ModelBackend):
         User can authenticate with phone or email
         """
         try:
-            if not username:
-                username = kwargs.get(User.USERNAME_FIELD)
-
             user = User.objects.get(Q(phone=username) | Q(email=username))
             if user.check_password(password):
                 if not self.user_can_authenticate(user):

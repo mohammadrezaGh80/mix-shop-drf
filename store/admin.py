@@ -196,7 +196,7 @@ class AddressAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'content_object', 'product', 'status', 'reply_to', 'created_datetime']
+    list_display = ['id', 'title', 'get_content_object', 'product', 'status', 'reply_to', 'created_datetime']
     autocomplete_fields = ['product', 'reply_to']
     ordering = ['-created_datetime']
     search_fields = ['title']
@@ -204,6 +204,10 @@ class CommentAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('content_object').select_related('product')
+
+    @admin.display(description='user')
+    def get_content_object(self, commnet):
+        return commnet.content_object
 
 
 @admin.register(Cart)

@@ -14,6 +14,7 @@ from .serializers import OTPSerializer, VerifyOTPSerializer, CustomTokenObtainPa
 from .models import OTP
 from .throttles import RequestOTPThrottle
 from .permissions import IsCustomAdminUser
+from .paginations import CustomLimitOffsetPagination
 
 User = get_user_model()
 
@@ -104,8 +105,9 @@ class SetPasswordGenericAPIView(generics.GenericAPIView):
 class UserViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'post', 'put', 'delete']
     serializer_class = UserSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by('-id')
     permission_classes = [IsCustomAdminUser]  
+    pagination_class = CustomLimitOffsetPagination
 
     def get_serializer_class(self):
         if self.request.method == 'POST':

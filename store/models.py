@@ -60,7 +60,7 @@ class Person(models.Model):
 
     @property
     def full_name(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name}".strip()
     
     class Meta:
         abstract = True
@@ -74,7 +74,7 @@ class Customer(Person):
     comments = GenericRelation('Comment', related_query_name="customer")
 
     def __str__(self):
-        return self.full_name if self.full_name.strip() else 'Unknown'
+        return self.full_name if self.full_name else 'Unknown'
 
     class Meta:
         verbose_name = _("Customer")
@@ -104,9 +104,10 @@ class Seller(Person):
     comments = GenericRelation('Comment', related_query_name="seller")
 
     def __str__(self):
-        return self.company_name
+        return f"{self.company_name}({self.national_code})"
 
     class Meta:
+        models.UniqueConstraint
         verbose_name = _("Seller")
         verbose_name_plural = _("Sellers")
 
@@ -133,12 +134,6 @@ class Product(models.Model):
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
-    
-    def get_comments(self):
-        """
-        Returns a queryset of approved comments related to this product.
-        """
-        return Comment.objects.select_related('content_type', 'reply_to').filter(product=self, status=Comment.COMMENT_STATUS_APPROVED).order_by('-created_datetime')
 
     def __str__(self):
         return self.title
@@ -175,6 +170,19 @@ class Comment(models.Model):
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
+    def get_all_replies(self, comment_pk):
+        queryset = Comment.objects.filter(
+                reply_to__id=comment_pk,
+                status=Comment.COMMENT_STATUS_APPROVED
+        ).select_related('content_type', 'reply_to').prefetch_related('content_object')
+
+        all_replies = []
+
+        for reply in queryset:
+            all_replies.append(reply)
+            all_replies += self.get_all_replies(reply.id)
+        
+        return all_replies
 
     def __str__(self):
         return f"{self.title}({self.body[:15] + '...' if len(self.body) > 15 else self.body})"
