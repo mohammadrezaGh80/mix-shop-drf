@@ -13,21 +13,27 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+from environs import Env
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = Env()
+env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-lcx@!q9prvvv&dp!k!6vodjw=287!=@!*=)a@=+)bz$v%l&-&6'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DJANGO_DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Application definition
@@ -46,6 +52,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_filters',
+    'corsheaders',
 
     # My apps
     'core',
@@ -56,6 +63,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -94,11 +102,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'root',
-        'NAME': 'mix_shop_drf',
-        'PASSWORD': 'persepolis1380',
-        'PORT': 5432,
-        'HOST': 'localhost',
+        'USER': env('DJANGO_DATABASE_USER'),
+        'NAME': env('DJANGO_DATABASE_NAME'),
+        'PASSWORD': env('DJANGO_DATABASE_PASSWORD'),
+        'PORT': env.int('DJANGO_DATABASE_PORT'),
+        'HOST': env('DJANGO_DATABASE_HOST'),
     }
 }
 
@@ -139,6 +147,7 @@ USE_TZ = True
 
 # Static config
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles/")
 
 # Media config
 MEDIA_URL = 'media/'
@@ -148,10 +157,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# config kavenegar
-SMS_API_KEY = '7154647830614C664749335A5A794939695A7253505035376B52506874517168476A33775042524E696F453D'
-OTP_TEMPLATE = 'OTP'
 
 # Authentication config
 AUTH_USER_MODEL = "core.CustomUser"
@@ -166,6 +171,6 @@ REST_FRAMEWORK = {
 
 # Config json web token
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int('DJANGO_JWT_ACCESS_MINUTES')),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=env.int('DJANGO_JWT_REFRESH_MINUTES')),
 }    
