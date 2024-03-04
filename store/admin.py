@@ -12,7 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from datetime import date
 
-from .models import Customer, Seller, Category, Product, Address, Comment, Cart, CartItem, Order, OrderItem, Person
+from .models import Customer, Seller, Category, Product, Address, Comment, Cart, CartItem, Order, OrderItem, Person, ProductImage
 
 
 # Custom filters
@@ -244,3 +244,11 @@ class OrderItemAdmin(admin.ModelAdmin):
     @admin.display(description="order's customer", ordering='order__customer__first_name')
     def order_customer(self, order_item):
         return order_item.order.customer
+
+
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ['product', 'image']
+    autocomplete_fields = ['product']
+    list_select_related = ['product']
+    list_per_page = 15

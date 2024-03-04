@@ -1,3 +1,4 @@
+import os
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
@@ -7,6 +8,7 @@ from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.core.exceptions import ValidationError
 
 from uuid import uuid4
+from PIL import Image, ImageChops
 
 from .validators import PostalCodeValidator, NationalCodeValidator
 
@@ -143,6 +145,36 @@ class Product(models.Model):
         verbose_name_plural = _("Products")
 
 
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images", verbose_name=_("Product"))
+    image = models.ImageField(upload_to="store/product_images/",
+                              validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg'], message=_('File extension not allowed. Allowed extensions include  .jpg, .jpeg'))],
+                              verbose_name=_("Image"))
+
+    def clean(self):
+        super().clean() 
+
+        if not self.image:
+            raise ValidationError(_("This field is required."))
+         
+        current_image = Image.open(self.image)
+
+        for product_image in ProductImage.objects.filter(product_id=self.product.id):
+            image = Image.open(product_image.image)
+
+            if current_image.mode == image.mode:
+                diff = ImageChops.difference(current_image,image)
+                if not diff.getbbox():
+                    raise ValidationError(_("The image for this product is duplicated"))
+
+    def __str__(self):
+        return f"{self.product}({self.id})"
+    
+    class Meta:
+        verbose_name = _("Product image")
+        verbose_name_plural = _("Product images")
+
+
 class Comment(models.Model):
     COMMENT_STATUS_WAITING = "w"
     COMMENT_STATUS_APPROVED = "a"
@@ -255,7 +287,7 @@ class OrderItem(models.Model):
 
 
     def __str__(self):
-        return f"Order item(id: {self.id}): {self.product} x {self.quantity}"
+        return f"Orunique_togetherder item(id: {self.id}): {self.product} x {self.quantity}"
 
     class Meta:
         unique_together = [["order", "product"]]
