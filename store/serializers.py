@@ -4,10 +4,11 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from django.core.validators import FileExtensionValidator
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
 
 from datetime import date
 
-from .models import Category, Comment, Customer, Address, Person, Seller, Product
+from .models import Category, Comment, Customer, Address, Person, ProductImage, Seller, Product
 
 User = get_user_model()
 
@@ -321,15 +322,45 @@ class ProductSerializer(serializers.ModelSerializer):
         return 'Available' if product.inventory > 0 else 'Unavailable'
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image', 'name']
+    
+    def validate(self, attrs):
+        product_pk = self.context.get('product_pk')
+        product = get_object_or_404(Product, pk=product_pk)
+        attrs['product'] = product
+
+        instance = ProductImage(**attrs)
+
+        try:
+            instance.clean()
+        except ValidationError as e:
+            raise serializers.ValidationError({"detail": e.messages})
+
+        return super().validate(attrs)
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+
+        representation['image'] = request.build_absolute_uri(instance.image.url)
+
+        return representation
+
+
 class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     seller = ProductSellerSerializer()
     status = serializers.SerializerMethodField()
+    images = ProductImageSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'title','slug' ,'category', 'seller' ,'price', 'status', 'inventory', 'description', 'comments']
+        fields = ['id', 'title','slug' ,'category', 'images', 'seller' ,'price', 'status', 'inventory', 'description', 'comments']
 
     def get_status(self, product):
         return 'Available' if product.inventory > 0 else 'Unavailable'

@@ -22,6 +22,7 @@ sellers_router.register('addresses', views.AddressSellerViewSet, basename='selle
 
 products_router = routers.NestedDefaultRouter(router, 'products', lookup='product')
 products_router.register('comments', views.CommentViewSet, basename='product-comments')
+products_router.register('images', views.ProductImageViewSet, basename='product-images')
 
 urlpatterns = router.urls + customers_router.urls + sellers_router.urls + products_router.urls + [
     path('request-seller/', views.RequestSellerGenericAPIView.as_view(), name='seller-request'),

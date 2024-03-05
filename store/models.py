@@ -109,7 +109,6 @@ class Seller(Person):
         return f"{self.company_name}({self.national_code})"
 
     class Meta:
-        models.UniqueConstraint
         verbose_name = _("Seller")
         verbose_name_plural = _("Sellers")
 
@@ -148,8 +147,10 @@ class Product(models.Model):
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images", verbose_name=_("Product"))
     image = models.ImageField(upload_to="store/product_images/",
-                              validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg'], message=_('File extension not allowed. Allowed extensions include  .jpg, .jpeg'))],
+                              validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg'], message=_("File extension not allowed. Allowed extensions include  .jpg, .jpeg"))],
                               verbose_name=_("Image"))
+    name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Name"))
+
 
     def clean(self):
         super().clean() 
@@ -166,6 +167,11 @@ class ProductImage(models.Model):
                 diff = ImageChops.difference(current_image,image)
                 if not diff.getbbox():
                     raise ValidationError(_("The image for this product is duplicated"))
+        
+    def save(self, *args, **kwargs):
+        if not self.name:
+            self.name = os.path.basename(self.image.name).split('.')[0]
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.product}({self.id})"

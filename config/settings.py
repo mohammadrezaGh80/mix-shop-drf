@@ -105,7 +105,6 @@ DATABASES = {
         'USER': env('DJANGO_DATABASE_USER'),
         'NAME': env('DJANGO_DATABASE_NAME'),
         'PASSWORD': env('DJANGO_DATABASE_PASSWORD'),
-        'PORT': env.int('DJANGO_DATABASE_PORT'),
         'HOST': env('DJANGO_DATABASE_HOST'),
     }
 }

@@ -24,7 +24,7 @@ faker = Faker()
 
 list_of_models = [Address, Customer, Seller, Category, Product, Comment, Cart, CartItem, Order, OrderItem]
 
-NUM_CUSTOMERS = 90
+NUM_CUSTOMERS = 40
 NUM_SELLERS = 10
 NUM_CATEGORIES = 50
 NUM_PRODUCTS = 1000

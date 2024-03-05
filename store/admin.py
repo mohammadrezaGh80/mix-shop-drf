@@ -248,7 +248,7 @@ class OrderItemAdmin(admin.ModelAdmin):
 
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ['product', 'image']
+    list_display = ['product', 'image', 'name']
     autocomplete_fields = ['product']
     list_select_related = ['product']
     list_per_page = 15

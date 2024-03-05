@@ -11,10 +11,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
 
 from . import serializers
-from .models import Category, Comment, Customer, Address, Product, Seller
+from .models import Category, Comment, Customer, Address, Product, ProductImage, Seller
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, SellerFilter, ProductFilter
-from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner
+from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, ProductImagePermission
 
 
 class CustomerViewSet(ModelViewSet):
@@ -277,11 +277,14 @@ class CommentViewSet(ModelViewSet):
 
     def get_queryset(self):
         product_pk = self.kwargs.get('product_pk')
-        queryset = Comment.objects.filter(
+        try:
+            queryset = Comment.objects.filter(
                 product_id=product_pk,
                 reply_to__isnull=True,
-                status=Comment.COMMENT_STATUS_APPROVED
-        )
+                status=Comment.COMMENT_STATUS_APPROVED)
+        except ValueError:
+            raise Http404
+        
         return queryset.select_related('content_type', 'reply_to').prefetch_related('content_object')
     
     def get_serializer_context(self):
@@ -328,3 +331,15 @@ class CommentListWaitingViewSet(ModelViewSet):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class ProductImageViewSet(ModelViewSet):
+    serializer_class = serializers.ProductImageSerializer
+    permission_classes = [ProductImagePermission]
+
+    def get_queryset(self):
+        product_pk = self.kwargs.get('product_pk')
+        return ProductImage.objects.filter(product_id=product_pk)
+    
+    def get_serializer_context(self):
+        return {'request': self.request, 'product_pk': self.kwargs.get('product_pk')}
+    
