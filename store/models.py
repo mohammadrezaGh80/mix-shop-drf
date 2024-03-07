@@ -145,11 +145,11 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images", verbose_name=_("Product"))
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, blank=True, null=True, related_name="images", verbose_name=_("Product"))
     image = models.ImageField(upload_to="store/product_images/",
                               validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg'], message=_("File extension not allowed. Allowed extensions include  .jpg, .jpeg"))],
                               verbose_name=_("Image"))
-    name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Name"))
+    name = models.CharField(max_length=100, blank=True, verbose_name=_("Name"))
 
 
     def clean(self):
@@ -160,13 +160,16 @@ class ProductImage(models.Model):
          
         current_image = Image.open(self.image)
 
-        for product_image in ProductImage.objects.filter(product_id=self.product.id):
+        for product_image in ProductImage.objects.filter(product=self.product):
             image = Image.open(product_image.image)
 
             if current_image.mode == image.mode:
                 diff = ImageChops.difference(current_image,image)
                 if not diff.getbbox():
-                    raise ValidationError(_("The image for this product is duplicated"))
+                    if getattr(self.product, 'id', False):
+                        raise ValidationError(_("This image for product is duplicated"))
+                    else:
+                        raise ValidationError(_("This image has already been uploaded"))
         
     def save(self, *args, **kwargs):
         if not self.name:

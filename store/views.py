@@ -253,7 +253,7 @@ class ProductViewSet(ModelViewSet):
             return queryset.prefetch_related(
                 Prefetch('comments',
                 queryset=Comment.objects.prefetch_related('content_object').select_related('content_type').filter(status=Comment.COMMENT_STATUS_APPROVED, reply_to__isnull=True))
-            )
+            ).prefetch_related('images')
         return queryset
 
     def get_serializer_class(self):
@@ -261,6 +261,8 @@ class ProductViewSet(ModelViewSet):
             return serializers.ProductSerializer
         elif self.action == 'retrieve':
             return serializers.ProductDetailSerializer
+        elif self.action == 'upload_image':
+            return serializers.ProductImageSerializer
         return serializers.ProductCreateSerializer
     
     def get_permissions(self):
@@ -269,6 +271,13 @@ class ProductViewSet(ModelViewSet):
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAdminUserOrSellerOwner()]
         return super().get_permissions()
+    
+    @action(detail=False, url_path='upload-image', methods=['POST'], permission_classes=[IsAdminUserOrSeller])
+    def upload_image(self, request, *args, **kwargs):
+        serializer = serializers.ProductImageSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
 class CommentViewSet(ModelViewSet):

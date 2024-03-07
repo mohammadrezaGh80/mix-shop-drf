@@ -309,19 +309,6 @@ class ProductSellerSerializer(serializers.ModelSerializer):
         return representation
 
 
-class ProductSerializer(serializers.ModelSerializer):
-    seller = serializers.CharField(source='seller.company_name', read_only=True)
-    category = serializers.CharField(source='category.title', read_only=True)
-    status = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Product
-        fields = ['id', 'title','slug' ,'category', 'seller' ,'price', 'status']
-
-    def get_status(self, product):
-        return 'Available' if product.inventory > 0 else 'Unavailable'
-
-
 class ProductImageSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -330,7 +317,10 @@ class ProductImageSerializer(serializers.ModelSerializer):
     
     def validate(self, attrs):
         product_pk = self.context.get('product_pk')
-        product = get_object_or_404(Product, pk=product_pk)
+        product = None
+
+        if product_pk:
+            product = get_object_or_404(Product, pk=product_pk)
         attrs['product'] = product
 
         instance = ProductImage(**attrs)
@@ -351,6 +341,28 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return representation
 
 
+class ProductSerializer(serializers.ModelSerializer):
+    seller = serializers.CharField(source='seller.company_name', read_only=True)
+    category = serializers.CharField(source='category.title', read_only=True)
+    status = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title','slug' ,'category', 'thumbnail', 'seller' ,'price', 'status']
+
+    def get_status(self, product):
+        return 'Available' if product.inventory > 0 else 'Unavailable'
+    
+    def get_thumbnail(self, product):
+        if not product.images:
+            return None
+        
+        product= product.images.first()
+        serializer = ProductImageSerializer(product, context=self.context)
+        return serializer.data
+
+
 class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     seller = ProductSellerSerializer()
@@ -368,24 +380,60 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 class ProductCreateSerializer(serializers.ModelSerializer):
     slug = serializers.SlugField(read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
+    image_ids = serializers.ListField(child=serializers.IntegerField(), required=False, write_only=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'slug', 'category',
+        fields = ['id', 'title', 'slug', 'category', 'images', 'image_ids',
                   'price', 'inventory', 'description']
     
+    def validate_image_ids(self, image_ids):
+        for image_id in image_ids:
+            try:
+                product_image = ProductImage.objects.get(pk=image_id)
+            except ProductImage.DoesNotExist:
+                raise serializers.ValidationError(_(f"There isn't any product image with id={image_id}."))
+            else:
+                if product_image.product:
+                    raise serializers.ValidationError(_(f"There is one or more images that belong to another products."))
+        
+        return image_ids
+
     def create(self, validated_data):
         request = self.context.get('request')
+        image_ids = validated_data.pop('image_ids')
+
         product = Product(**validated_data)
         product.slug = slugify(product.title)
         product.seller = request.user.seller
         product.save()
+
+        product_images = []
+        for image_id in image_ids:
+            product_image = ProductImage.objects.get(pk=image_id)
+            product_image.product = product
+            product_images.append(product_image)
+        
+        ProductImage.objects.bulk_update(product_images, fields=['product'])
+
         return product
-    
+        
     def update(self, instance, validated_data):
         title = validated_data.get('title')
-        instance.slug = slugify(title)
-        instance.save()
+        if title:
+            instance.slug = slugify(title)
+            instance.save()
+
+        image_ids = validated_data.pop('image_ids')
+        product_images = []
+        for image_id in image_ids:
+            product_image = ProductImage.objects.get(pk=image_id)
+            product_image.product = instance
+            product_images.append(product_image)
+        
+        ProductImage.objects.bulk_update(product_images, fields=['product'])
+
         return super().update(instance, validated_data)
 
 
