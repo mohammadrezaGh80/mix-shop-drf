@@ -48,7 +48,6 @@ class CustomUserAdmin(BaseUserAdmin):
     actions = ['active_users_accounts']
     list_editable = ['is_active', 'is_staff']
     list_per_page = 15
-    readonly_fields = ['phone', 'email']
 
     @admin.action(description="Active users accounts")
     def active_users_accounts(self, request, queryset):

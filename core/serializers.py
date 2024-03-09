@@ -74,10 +74,11 @@ class SetPasswordSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     has_password = serializers.BooleanField(source='password', read_only=True)
     email = serializers.EmailField()
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'phone', 'email', 'has_password']
+        fields = ['id', 'phone', 'email', 'role', 'has_password']
         read_only_fields = ['phone']
     
     def validate_email(self, email):
@@ -89,6 +90,13 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 _("This email is already chosen, please enter another email.")
             )
+        
+    def get_role(self, user):
+        if user.is_staff:
+            return 'admin'
+        elif getattr(user, 'seller', False):
+            return 'seller'
+        return 'customer'
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
