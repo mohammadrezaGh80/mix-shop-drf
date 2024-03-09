@@ -2,6 +2,9 @@ from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
 
 from .models import CustomUser, OTP
 
@@ -45,20 +48,50 @@ class CustomUserAdmin(BaseUserAdmin):
     )
     search_fields = ['phone', 'email']
     ordering = ['email']
-    actions = ['active_users_accounts']
-    list_editable = ['is_active', 'is_staff']
+    actions = ['active_users_accounts', 'add_user_to_staff', 'remove_users_from_staff']
+    list_editable = ['is_active']
+    readonly_fields = ['is_staff', 'is_superuser']
+    filter_horizontal = []
     list_per_page = 15
 
-    @admin.action(description="Active users accounts")
+
+    @admin.action(description='Active users accounts')
     def active_users_accounts(self, request, queryset):
         update_count = queryset.update(is_active=True)
         self.message_user(
             request,
-            _(f"{update_count} of users account activated."),
+            f"حساب {update_count} نفر از کاربران فعال شد.",
             messages.SUCCESS
         )
 
-    filter_horizontal = []
+    @admin.action(description='Add user to staff')
+    def add_user_to_staff(self, request, queryset):
+        if queryset.count() != 1:
+            self.message_user(request, 
+                              'دو یا چند کاربر را نمیتوانید به صورت همزمان ادمین کنید.',
+                              messages.WARNING)
+            return
+        
+        user = queryset.first()
+        if not user.has_usable_password():
+            self.message_user(request, 
+                              f'کاربر(شماره تلفن: {user.phone}) رمز عبوری ندارد، لطفا یک رمز عبور برای کاربر وارد کنید.',
+                              messages.WARNING)
+            url = (
+                reverse('admin:core_customuser_changelist')
+                + f'{user.id}/password/'
+            )
+            return HttpResponseRedirect(url)
+        
+        user.is_staff = True
+        user.save()
+
+    @admin.action(description='Remove users from staff')
+    def remove_users_from_staff(self, request, queryset):
+        update_count = queryset.update(is_staff=False)
+        self.message_user(request, 
+                          f'{update_count} نفر از کاربران از ادمینی کنار گذاشته شدند.',
+                          messages.SUCCESS)
 
 
 @admin.register(OTP)

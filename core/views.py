@@ -70,7 +70,12 @@ class VerifyOTPGenericAPIView(generics.GenericAPIView):
                     expired_datetime__gte=timezone.now(),
                 )
 
-                user, _ = User.objects.get_or_create(phone=phone)
+                try:
+                    user = User.objects.get(phone=phone)
+                except User.DoesNotExist:
+                    user = User(phone=phone)
+                    user.set_unusable_password()
+                    user.save()
                 
                 otp_obj.delete()
 

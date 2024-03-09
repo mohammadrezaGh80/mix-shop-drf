@@ -1,8 +1,5 @@
 from typing import Any
 from django.contrib import admin
-from django.db.models.query import QuerySet
-from django.http.request import HttpRequest
-from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 from django.db.models import Count
 from django.urls import reverse

@@ -99,7 +99,7 @@ class Seller(Person):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller", verbose_name=_("User"))
     company_name = models.CharField(max_length=100, verbose_name=_("Company name"))
     cv = models.FileField(upload_to="store/cv_files/", blank=True, null=True, validators=[FileExtensionValidator(allowed_extensions=['pdf'])], verbose_name=_("CV"))
-    national_code = models.CharField(max_length=10, unique=True, validators=[national_code_validator], verbose_name=_("National code"))
+    national_code = models.CharField(max_length=10, unique=True, null=True, validators=[national_code_validator], verbose_name=_("National code"))
     status = models.CharField(max_length=1, choices=SELLER_STATUS ,default=SELLER_STATUS_WAITING, verbose_name=_("Status"))
 
     addresses = GenericRelation(Address, related_query_name="seller")
