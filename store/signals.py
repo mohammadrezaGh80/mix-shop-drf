@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 
 from .models import Customer, Seller
-from core.signals import superuser_created
+from core.signals import superuser_created, add_user_to_staff, remove_users_from_staff
 
 User = get_user_model()
 
@@ -40,10 +40,14 @@ def change_user_type_user_for_comments(sender, instance, **kwargs):
                     comment.save()
 
 
-@receiver(pre_save, sender=User)
-def change_user_type_to_seller_based_on_staff_status(sender, instance, **kwargs):
-    if instance.id:
-        previous_instance = User.objects.get(id=instance.id)
-        if previous_instance.is_staff != instance.is_staff:
-            if instance.is_staff is True and not getattr(instance, 'seller', False):
-                Seller.objects.create(user=instance, company_name='Mix shop', status=Seller.SELLER_STATUS_ACCEPTED)
+@receiver(add_user_to_staff)
+def create_seller_for_newly_staff_user(sender, instance, **kwargs):
+    if not getattr(instance, 'seller', False):
+        Seller.objects.create(user=instance, company_name='Mix shop', status=Seller.SELLER_STATUS_ACCEPTED)
+
+
+@receiver(remove_users_from_staff)
+def remove_users_from_seller(sender, queryset, **kwargs):
+    for user in queryset:
+        if (seller := getattr(user, 'seller', False)):
+            seller.delete()

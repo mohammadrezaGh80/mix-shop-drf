@@ -19,6 +19,7 @@ drf-nested-routers = "*"
 drf-yasg = {extras = ["validation"], version = "*"}
 environs = {extras = ["django"], version = "*"}
 django-cors-headers = "*"
+django-rosetta = "*"
 
 [dev-packages]
 

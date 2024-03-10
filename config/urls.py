@@ -11,6 +11,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('core.urls')),
     path('store/', include('store.urls')),
+    path('rosetta/', include('rosetta.urls'))
 ]
 
 if settings.DEBUG is True:

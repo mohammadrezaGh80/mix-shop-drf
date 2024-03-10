@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 
 
 from .models import CustomUser, OTP
+from .signals import add_user_to_staff, remove_users_from_staff
 
 
 # Custom Filter
@@ -60,7 +61,7 @@ class CustomUserAdmin(BaseUserAdmin):
         update_count = queryset.update(is_active=True)
         self.message_user(
             request,
-            f"حساب {update_count} نفر از کاربران فعال شد.",
+            _('%(update_count)d accounts of users activated.') % {'update_count': update_count},
             messages.SUCCESS
         )
 
@@ -68,14 +69,14 @@ class CustomUserAdmin(BaseUserAdmin):
     def add_user_to_staff(self, request, queryset):
         if queryset.count() != 1:
             self.message_user(request, 
-                              'دو یا چند کاربر را نمیتوانید به صورت همزمان ادمین کنید.',
+                              _('You cannot administer two or more users at the same time.'),
                               messages.WARNING)
             return
         
         user = queryset.first()
         if not user.has_usable_password():
             self.message_user(request, 
-                              f'کاربر(شماره تلفن: {user.phone}) رمز عبوری ندارد، لطفا یک رمز عبور برای کاربر وارد کنید.',
+                              _('User(phone number: %(phone_number)s) does not have a password, please enter a password for the user.') % {'phone_number': user.phone},
                               messages.WARNING)
             url = (
                 reverse('admin:core_customuser_changelist')
@@ -85,12 +86,19 @@ class CustomUserAdmin(BaseUserAdmin):
         
         user.is_staff = True
         user.save()
+        add_user_to_staff.send_robust(self.__class__, instance=user)
+        self.message_user(request, 
+                          _('User(phone number: %(phone_number)s) have been successfully admin.') % {'phone_number': user.phone},
+                          messages.SUCCESS)
 
     @admin.action(description='Remove users from staff')
     def remove_users_from_staff(self, request, queryset):
+        queryset = queryset.filter(is_staff=True)
+        remove_users_from_staff.send_robust(self.__class__, queryset=queryset)
+        
         update_count = queryset.update(is_staff=False)
         self.message_user(request, 
-                          f'{update_count} نفر از کاربران از ادمینی کنار گذاشته شدند.',
+                          _('%(update_count)d users have been removed from the admin.') % {'update_count': update_count},
                           messages.SUCCESS)
 
 

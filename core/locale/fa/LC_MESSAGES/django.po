@@ -1,0 +1,153 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-03-10 17:55+0330\n"
+"PO-Revision-Date: 2024-03-10 17:55+0330\n"
+"Last-Translator: Anonymous User <mohammadreza6@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Translated-Using: django-rosetta 0.10.0\n"
+
+#: admin.py:22
+msgid "Expired"
+msgstr ""
+
+#: admin.py:23
+msgid "Valid"
+msgstr ""
+
+#: admin.py:40
+msgid "Personal info"
+msgstr ""
+
+#: admin.py:41
+msgid "Permissions"
+msgstr ""
+
+#: admin.py:63
+#, python-format
+msgid "%(update_count)d accounts of users activated."
+msgstr " حساب %(update_count)d نفر از کاربران فعال شد."
+
+#: admin.py:71
+msgid "You cannot administer two or more users at the same time."
+msgstr "دو یا چند کاربر را نمی توانید به صورت همزمان ادمین کنید."
+
+#: admin.py:78
+#, python-format
+msgid ""
+"User(phone number: %(phone_number)s) does not have a password, please enter "
+"a password for the user."
+msgstr ""
+"کاربر(شماره تلفن:  %(phone_number)s) رمز عبوری ندارد، لطفا یک رمز عبور برای "
+"کاربر وارد کنید."
+
+#: admin.py:89
+#, python-format
+#| msgid ""
+#| "User(phone number: %(phone_number)s) does not have a password, please enter "
+#| "a password for the user."
+msgid "User(phone number: %(phone_number)s) have been successfully admin."
+msgstr "کاربر(شماره تلفن:  %(phone_number)s) با موفقیت ادمین شد."
+
+#: admin.py:96
+#, python-format
+msgid "%(update_count)d users have been removed from the admin."
+msgstr "%(update_count)d نفر از کاربران از ادمینی کنار گذاشته شدند."
+
+#: backends.py:19
+msgid "Your account is not active."
+msgstr ""
+
+#: backends.py:23
+msgid "Username and Password is incorrect!"
+msgstr ""
+
+#: models.py:21
+msgid "Users must have an phone number."
+msgstr ""
+
+#: models.py:60 models.py:97
+msgid "Phone"
+msgstr ""
+
+#: models.py:61
+msgid "Email"
+msgstr ""
+
+#: models.py:64
+msgid "Is active"
+msgstr ""
+
+#: models.py:66
+msgid ""
+"Designates whether this user should be treated as active. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+
+#: models.py:71
+msgid "Is staff"
+msgstr ""
+
+#: models.py:72
+msgid "Designates whether the user can log into this admin site."
+msgstr ""
+
+#: models.py:84
+msgid "User"
+msgstr ""
+
+#: models.py:85
+msgid "Users"
+msgstr ""
+
+#: models.py:96
+msgid "Request id"
+msgstr ""
+
+#: models.py:98
+msgid "Password"
+msgstr ""
+
+#: models.py:100
+msgid "Created datetime"
+msgstr ""
+
+#: models.py:101
+msgid "Expired datetime"
+msgstr ""
+
+#: models.py:114
+msgid "One time password"
+msgstr ""
+
+#: models.py:115
+msgid "One time passwords"
+msgstr ""
+
+#: serializers.py:91
+msgid "This email is already chosen, please enter another email."
+msgstr ""
+
+#: validators.py:8
+msgid ""
+"Enter a valid phone number, phone number must have 11 digits which starts "
+"with the number 09."
+msgstr ""
+
+#: validators.py:16
+msgid ""
+"Enter a valid national code, National code must be 10 digits which start "
+"with one of the numbers between 1 and 9."
+msgstr ""
