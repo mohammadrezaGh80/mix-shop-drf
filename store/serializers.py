@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from django.core.exceptions import ValidationError
 
 from datetime import date
+from types import NoneType
 
 from .models import Category, Comment, Customer, Address, Person, ProductImage, Seller, Product
 
@@ -372,7 +373,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'title','slug' ,'category', 'images', 'seller' ,'price', 'status', 'inventory', 'description', 'comments']
+        fields = ['id', 'title','slug' ,'category', 'images', 'seller' ,'price', 'status', 'inventory', 'description', 'specifications', 'comments']
 
     def get_status(self, product):
         return 'Available' if product.inventory > 0 else 'Unavailable'
@@ -386,7 +387,7 @@ class ProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'title', 'slug', 'category', 'images', 'image_ids',
-                  'price', 'inventory', 'description']
+                  'price', 'inventory', 'description', 'specifications']
     
     def validate_image_ids(self, image_ids):
         for image_id in image_ids:
@@ -399,10 +400,16 @@ class ProductCreateSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(_(f"There is one or more images that belong to another products."))
         
         return image_ids
+    
+    def validate_specifications(self, specifications):
+        print(type(specifications))
+        if isinstance(specifications, NoneType):
+            raise serializers.ValidationError(_("This field may not be null."))
+        return specifications
 
     def create(self, validated_data):
         request = self.context.get('request')
-        image_ids = validated_data.pop('image_ids')
+        image_ids = validated_data.pop('image_ids', [])
 
         product = Product(**validated_data)
         product.slug = slugify(product.title)
@@ -425,7 +432,7 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             instance.slug = slugify(title)
             instance.save()
 
-        image_ids = validated_data.pop('image_ids')
+        image_ids = validated_data.pop('image_ids', [])
         product_images = []
         for image_id in image_ids:
             product_image = ProductImage.objects.get(pk=image_id)

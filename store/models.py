@@ -132,6 +132,7 @@ class Product(models.Model):
     description = models.TextField(verbose_name=_("Description"))
     price = models.PositiveIntegerField(verbose_name=_("Price"))
     inventory = models.PositiveSmallIntegerField(verbose_name=_("Inventory"))
+    specifications = models.JSONField(default=dict, verbose_name=_("Specifications"))
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
