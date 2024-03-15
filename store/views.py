@@ -6,6 +6,7 @@ from rest_framework import status
 from django.http import Http404
 from rest_framework import generics
 from django.db.models import Prefetch
+from django.utils.translation import gettext as _
 
 from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
@@ -131,7 +132,7 @@ class SellerViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.products.count() > 0:
-            return Response({'detail': 'There is some products relating this seller. Please remove them first.'})
+            return Response({'detail': _('There is some products relating this seller. Please remove them first.')})
         
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -154,7 +155,7 @@ class SellerViewSet(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == 'DELETE':
             if seller.products.count() > 0:
-                return Response({'detail': 'There is some products relating to you. Please remove them first.'})
+                return Response({'detail': _('There is some products relating to you. Please remove them first.')})
             seller.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         
@@ -221,7 +222,7 @@ class SellerListRequestsViewSet(ModelViewSet):
 
 
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.select_related('sub_category').prefetch_related('products').order_by("-id")
     permission_classes = [IsAdminUserOrReadOnly]
     pagination_class = CustomLimitOffsetPagination
 
@@ -233,8 +234,8 @@ class CategoryViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        if instance.products.count() > 0:
-            return Response({'detail': 'There is some products relating this category. Please remove them first.'})
+        if instance.get_products_count_of_category() > 0:
+            return Response({'detail': _('There is some products relating this category. Please remove them first.')})
         
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -249,11 +250,16 @@ class ProductViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        if self.action == 'retrieve':
+        if self.action == 'list':
+            return queryset.prefetch_related(
+                Prefetch('images', to_attr="product_images")
+            )
+        elif self.action == 'retrieve':
             return queryset.prefetch_related(
                 Prefetch('comments',
                 queryset=Comment.objects.prefetch_related('content_object').select_related('content_type').filter(status=Comment.COMMENT_STATUS_APPROVED, reply_to__isnull=True))
             ).prefetch_related('images')
+            
         return queryset
 
     def get_serializer_class(self):

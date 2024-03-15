@@ -1,9 +1,10 @@
 import django_filters
 from django.utils.translation import gettext_lazy as _
+from django.shortcuts import get_object_or_404
 
 from datetime import date, timedelta
 
-from .models import Customer, Product, Seller
+from .models import Category, Customer, Product, Seller
 
 
 class CustomerFilter(django_filters.FilterSet):
@@ -72,11 +73,11 @@ class SellerFilter(CustomerFilter):
     gender = django_filters.ChoiceFilter(field_name='gender', choices=SELLER_GENDER, method='filter_gender', label='gender')
 
     def filter_gender(self, queryset, field_name, value):
-        if value == self.CUSTOMER_GENDER_MALE:
-            filter_condition = {field_name: self.CUSTOMER_GENDER_MALE}
+        if value == self.SELLER_GENDER_MALE:
+            filter_condition = {field_name: self.SELLER_GENDER_MALE}
             return queryset.filter(**filter_condition)
         elif value == self.CUSTOMER_GENDER_FEMALE:
-            filter_condition = {field_name: self.CUSTOMER_GENDER_FEMALE}
+            filter_condition = {field_name: self.SELLER_GENDER_FEMALE}
             return queryset.filter(**filter_condition)
 
     class Meta:
@@ -88,9 +89,17 @@ class ProductFilter(django_filters.FilterSet):
     price_min = django_filters.NumberFilter(field_name='price', lookup_expr='gte', label='price_min')
     price_max = django_filters.NumberFilter(field_name='price', lookup_expr='lte', label='price_max')
     has_inventory = django_filters.BooleanFilter(field_name='inventory', method='filter_has_inventory', label='has_inventory')
+    category = django_filters.NumberFilter(field_name='category', method='filter_category', label='category')
 
     def filter_has_inventory(self, queryset, field_name, value):
         filter_condition = {f'{field_name}__gte': 1} if value else {f'{field_name}': 0}
+        return queryset.filter(**filter_condition)
+
+    def filter_category(self, queryset, field_name, value):
+        category = get_object_or_404(Category, pk=value)
+        list_category_descendants = list(category.get_descendants(include_self=True))
+
+        filter_condition = {f'{field_name}__in': list_category_descendants}
         return queryset.filter(**filter_condition)
 
     class Meta:

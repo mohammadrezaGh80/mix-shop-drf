@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 from django.core.validators import FileExtensionValidator
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 
 from datetime import date
 from types import NoneType
@@ -231,7 +232,13 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['id', 'title']
+        fields = ['id', 'title', 'sub_category']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.sub_category:
+            representation['sub_category'] = instance.sub_category.title
+        return representation
     
 
 class CategoryDetailSerializer(serializers.ModelSerializer):
@@ -239,10 +246,24 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['id', 'title', 'products_count']
+        fields = ['id', 'title', 'sub_category', 'products_count']
     
     def get_products_count(self, category):
-        return category.products.count()
+        categories = category.get_descendants(include_self=True).annotate(
+            products_count=Count('products')
+        )
+        products_count = 0
+
+        for category in categories:
+            products_count += category.products_count
+        
+        return products_count      
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.sub_category:
+            representation['sub_category'] = instance.sub_category.title
+        return representation
     
 
 class CommentObjectRelatedField(serializers.RelatedField):
@@ -285,7 +306,7 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_replies(self, comment):
         queryset = comment.get_all_replies(comment.pk)
         serializer = ReplyCommentSerializer(queryset, many=True)
-        return serializer.data 
+        return serializer.data
        
     def get_user_type(self, comment):
         return comment.content_type.model_class().__name__
@@ -356,10 +377,10 @@ class ProductSerializer(serializers.ModelSerializer):
         return 'Available' if product.inventory > 0 else 'Unavailable'
     
     def get_thumbnail(self, product):
-        if not product.images:
+        if not product.product_images:
             return None
         
-        product= product.images.first()
+        product = product.product_images[0]
         serializer = ProductImageSerializer(product, context=self.context)
         return serializer.data
 
@@ -402,7 +423,6 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         return image_ids
     
     def validate_specifications(self, specifications):
-        print(type(specifications))
         if isinstance(specifications, NoneType):
             raise serializers.ValidationError(_("This field may not be null."))
         return specifications

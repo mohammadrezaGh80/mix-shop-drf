@@ -1,4 +1,3 @@
-import os
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
@@ -7,8 +6,10 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.core.exceptions import ValidationError
 
+import os
 from uuid import uuid4
 from PIL import Image, ImageChops
+from mptt.models import TreeForeignKey, MPTTModel
 
 from .validators import PostalCodeValidator, NationalCodeValidator
 
@@ -113,12 +114,17 @@ class Seller(Person):
         verbose_name_plural = _("Sellers")
 
 
-class Category(models.Model):
+class Category(MPTTModel):
     title = models.CharField(max_length=255, verbose_name=_("Title"))
+    sub_category = TreeForeignKey('self', blank=True, null=True, on_delete=models.CASCADE, related_name='sub_categories', verbose_name=_("Sub category"))
 
     def __str__(self):
         return self.title
     
+    class MPTTMeta:
+        order_insertion_by = ['title']
+        parent_attr = 'sub_category'
+
     class Meta:
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
@@ -132,7 +138,7 @@ class Product(models.Model):
     description = models.TextField(verbose_name=_("Description"))
     price = models.PositiveIntegerField(verbose_name=_("Price"))
     inventory = models.PositiveSmallIntegerField(verbose_name=_("Inventory"))
-    specifications = models.JSONField(default=dict, verbose_name=_("Specifications"))
+    specifications = models.JSONField(blank=True, default=dict, verbose_name=_("Specifications"))
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))

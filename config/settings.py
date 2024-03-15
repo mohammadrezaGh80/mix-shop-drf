@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'rosetta',
+    'mptt',
 
     # My apps
     'core',

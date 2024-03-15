@@ -141,8 +141,25 @@ class SellerAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['title']
+    list_display = ['title', 'sub_category', 'level', 'lft', 'rght', 'num_of_sub_categories']
     search_fields = ['title']
+    list_per_page = 15
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('sub_category')\
+            .annotate(sub_categories_count=Count('sub_categories'))
+    
+    @admin.display(description='# sub_categories', ordering='sub_categories_count')
+    def num_of_sub_categories(self, category):
+        url = (
+            reverse('admin:store_category_changelist')
+            + '?'
+            + urlencode({
+                'sub_category': category.id
+            })
+        )
+
+        return format_html('<a href={}>{}</a>', url, category.sub_categories_count)
 
 
 @admin.register(Product)
