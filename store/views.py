@@ -222,9 +222,16 @@ class SellerListRequestsViewSet(ModelViewSet):
 
 
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.select_related('sub_category').prefetch_related('products').order_by("-id")
+    queryset = Category.objects.select_related('sub_category').order_by("-id")
     permission_classes = [IsAdminUserOrReadOnly]
     pagination_class = CustomLimitOffsetPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.action == 'retrieve':
+            queryset.prefetch_related('products')
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -289,27 +296,46 @@ class ProductViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'post', 'delete', 'patch']
     serializer_class = serializers.CommentSerializer
+    pagination_class = CustomLimitOffsetPagination
 
     def get_queryset(self):
         product_pk = self.kwargs.get('product_pk')
-        try:
+
+        if self.action == 'list':
+            try:
+                queryset = Comment.objects.filter(
+                    product_id=product_pk,
+                    reply_to__isnull=True,
+                    status=Comment.COMMENT_STATUS_APPROVED)
+            except ValueError:
+                raise Http404
+        else:
             queryset = Comment.objects.filter(
-                product_id=product_pk,
-                reply_to__isnull=True,
-                status=Comment.COMMENT_STATUS_APPROVED)
-        except ValueError:
-            raise Http404
+                    product_id=product_pk,
+                    status=Comment.COMMENT_STATUS_APPROVED)
         
-        return queryset.select_related('content_type', 'reply_to').prefetch_related('content_object')
+        return queryset.select_related('content_type').prefetch_related('content_object')
+    
+    def get_serializer_class(self):
+        if self.action in ['retrieve', 'partial_update']:
+            return serializers.CommentDetailSerializer     
+        return serializers.CommentSerializer
     
     def get_serializer_context(self):
+        product_pk = self.kwargs.get('product_pk')
+        try:
+            product_pk = int(product_pk)
+            product = Product.objects.get(id=product_pk)
+        except (ValueError, Product.DoesNotExist):
+            raise Http404
+        
         if self.action == 'create':
             user = self.request.user
             if getattr(user, 'seller', None) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
                 user_type = user.seller
             else:
                 user_type = user.customer
-            return {'product_pk': self.kwargs.get('product_pk'),
+            return {'product_pk': product_pk,
                     'user': user_type}
         return super().get_serializer_context()
     

@@ -107,6 +107,8 @@ class Command(BaseCommand):
 
         # comments data
         print(f"Adding comments...", end='')
+        all_comments = []
+
         for product in all_products:
             for _ in range(random.randint(0, 5)):
                 comment = CommentFactory(
@@ -115,7 +117,8 @@ class Command(BaseCommand):
                 )
                 comment.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12),day=random.randint(1,28), tzinfo=timezone.utc)
                 comment.modified_datetime = comment.created_datetime + timedelta(hours=random.randint(1, 500))
-                comment.save()
+                all_comments.append(comment)
+        Comment.objects.bulk_update(all_comments, fields=['created_datetime', 'modified_datetime'])
         
         print("DONE")
 

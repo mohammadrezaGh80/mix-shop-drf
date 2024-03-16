@@ -191,7 +191,7 @@ class ProductImage(models.Model):
         verbose_name_plural = _("Product images")
 
 
-class Comment(models.Model):
+class Comment(MPTTModel):
     COMMENT_STATUS_WAITING = "w"
     COMMENT_STATUS_APPROVED = "a"
     COMMENT_STATUS_NOT_APPROVED = "na"
@@ -213,27 +213,17 @@ class Comment(models.Model):
     title = models.CharField(max_length=255, blank=True, verbose_name=_("Title"))
     body = models.TextField(verbose_name=_("Body"))
     status = models.CharField(max_length=2, choices=COMMENT_STATUS, default=COMMENT_STATUS_WAITING, verbose_name=_("Status"))
-    reply_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies', verbose_name=_("Reply to"))
+    reply_to = TreeForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies', verbose_name=_("Reply to"))
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
-    def get_all_replies(self, comment_pk):
-        queryset = Comment.objects.filter(
-                reply_to__id=comment_pk,
-                status=Comment.COMMENT_STATUS_APPROVED
-        ).select_related('content_type', 'reply_to').prefetch_related('content_object')
-
-        all_replies = []
-
-        for reply in queryset:
-            all_replies.append(reply)
-            all_replies += self.get_all_replies(reply.id)
-        
-        return all_replies
-
     def __str__(self):
         return f"{self.title}({self.body[:15] + '...' if len(self.body) > 15 else self.body})"
+
+    class MPTTMeta:
+        order_insertion_by = ['title']
+        parent_attr = 'reply_to'
     
     class Meta:
         verbose_name = _("Comment")

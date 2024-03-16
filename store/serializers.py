@@ -1,3 +1,4 @@
+from django.http import Http404
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
@@ -9,6 +10,7 @@ from django.db.models import Count
 
 from datetime import date
 from types import NoneType
+from mptt.exceptions import InvalidMove
 
 from .models import Category, Comment, Customer, Address, Person, ProductImage, Seller, Product
 
@@ -233,6 +235,12 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'title', 'sub_category']
+    
+    def update(self, instance, validated_data):
+        try:
+            return super().update(instance, validated_data)
+        except InvalidMove:
+            raise serializers.ValidationError({'detail': _('A category may not be made a sub_category of any of its descendants or itself.')})
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -304,19 +312,46 @@ class CommentSerializer(serializers.ModelSerializer):
         }
     
     def get_replies(self, comment):
-        queryset = comment.get_all_replies(comment.pk)
+        queryset = comment.get_descendants(include_self=False).select_related('content_type').prefetch_related('content_object')\
+                    .filter(status=Comment.COMMENT_STATUS_APPROVED)
         serializer = ReplyCommentSerializer(queryset, many=True)
         return serializer.data
        
     def get_user_type(self, comment):
         return comment.content_type.model_class().__name__
     
+    def validate_reply_to(self, reply_to):
+        if reply_to:
+            product_pk = self.context.get('product_pk')
+            product = get_object_or_404(Product, pk=product_pk)
+
+            try:
+                product.comments.get(id=reply_to.id)
+            except Comment.DoesNotExist:
+                raise serializers.ValidationError({'detail': _("There isn't comment with id=%(reply_to_id)d in the %(product_title)s product.") % {'reply_to_id': reply_to.id, 'product_title': product.title}})
+
+        return reply_to
+    
     def create(self, validated_data):
         product_pk = self.context.get('product_pk')
         user = self.context.get('user')
+        
         validated_data['product_id'] = product_pk
         validated_data['content_object'] = user
         return super().create(validated_data)
+
+
+class CommentDetailSerializer(serializers.ModelSerializer):
+    display_name = CommentObjectRelatedField(source='content_object', read_only=True)
+    user_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'display_name', 'user_type', 'title', 'body', 'reply_to']
+        read_only_fields = ['reply_to']
+    
+    def get_user_type(self, comment):
+        return comment.content_type.model_class().__name__
    
 
 class ProductSellerSerializer(serializers.ModelSerializer):
