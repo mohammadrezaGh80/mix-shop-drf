@@ -257,15 +257,7 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'sub_category', 'products_count']
     
     def get_products_count(self, category):
-        categories = category.get_descendants(include_self=True).annotate(
-            products_count=Count('products')
-        )
-        products_count = 0
-
-        for category in categories:
-            products_count += category.products_count
-        
-        return products_count      
+        return category.get_products_count_of_category()    
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)

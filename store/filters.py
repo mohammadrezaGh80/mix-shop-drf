@@ -92,7 +92,11 @@ class ProductFilter(django_filters.FilterSet):
     category = django_filters.NumberFilter(field_name='category', method='filter_category', label='category')
 
     def filter_has_inventory(self, queryset, field_name, value):
-        filter_condition = {f'{field_name}__gte': 1} if value else {f'{field_name}': 0}
+        filter_condition = {}
+        if value is True:
+            filter_condition = {f'{field_name}__gte': 1}
+        elif value is False:
+          filter_condition = {f'{field_name}': 0}
         return queryset.filter(**filter_condition)
 
     def filter_category(self, queryset, field_name, value):

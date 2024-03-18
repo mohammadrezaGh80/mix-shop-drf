@@ -141,12 +141,12 @@ class SellerAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['title', 'sub_category', 'level', 'lft', 'rght', 'num_of_sub_categories']
+    list_display = ['title', 'sub_category', 'level', 'lft', 'rght', 'num_of_sub_categories', 'num_of_products']
     search_fields = ['title']
     list_per_page = 15
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('sub_category')\
+        return super().get_queryset(request).select_related('sub_category').prefetch_related('products')\
             .annotate(sub_categories_count=Count('sub_categories'))
     
     @admin.display(description='# sub_categories', ordering='sub_categories_count')
@@ -160,6 +160,18 @@ class CategoryAdmin(admin.ModelAdmin):
         )
 
         return format_html('<a href={}>{}</a>', url, category.sub_categories_count)
+    
+    @admin.display(description="# products")
+    def num_of_products(self, category):
+        url = (
+            reverse('admin:store_product_changelist')
+            + '?'
+            + urlencode({
+                'category': category.id
+            })
+        )
+
+        return format_html('<a href={}>{}</a>', url, category.products.count())
 
 
 @admin.register(Product)

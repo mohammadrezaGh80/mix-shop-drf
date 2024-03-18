@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Count
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
@@ -117,6 +118,17 @@ class Seller(Person):
 class Category(MPTTModel):
     title = models.CharField(max_length=255, verbose_name=_("Title"))
     sub_category = TreeForeignKey('self', blank=True, null=True, on_delete=models.CASCADE, related_name='sub_categories', verbose_name=_("Sub category"))
+
+    def get_products_count_of_category(self):
+        categories = self.get_descendants(include_self=True).annotate(
+            products_count=Count('products')
+        )
+        products_count = 0
+
+        for category in categories:
+            products_count += category.products_count
+        
+        return products_count 
 
     def __str__(self):
         return self.title

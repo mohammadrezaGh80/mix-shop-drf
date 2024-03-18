@@ -83,7 +83,7 @@ class ProductImagePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         try:
             product_pk = int(view.kwargs.get('product_pk'))
-        except ValueError:
+        except (ValueError, TypeError):
             raise Http404
 
         if (not ProductImagePermission.product) or \
