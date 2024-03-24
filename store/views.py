@@ -319,7 +319,7 @@ class CommentViewSet(ModelViewSet):
     
     def get_serializer_class(self):
         if self.action in ['retrieve', 'partial_update']:
-            return serializers.CommentDetailSerializer     
+            return serializers.CommentDetailSerializer
         return serializers.CommentSerializer
     
     def get_serializer_context(self):

@@ -111,6 +111,9 @@ class CommentFactory(DjangoModelFactory):
         variable_nb_sentences=True
     )
     status = factory.LazyFunction(lambda: random.choice([models.Comment.COMMENT_STATUS_WAITING, models.Comment.COMMENT_STATUS_APPROVED, models.Comment.COMMENT_STATUS_NOT_APPROVED]))
+    rating = factory.LazyFunction(
+        lambda: random.choice([models.Comment.COMMENT_RATING_VERY_BAD, models.Comment.COMMENT_RATING_BAD, models.Comment.COMMENT_RATING_NORMAL, 
+                               models.Comment.COMMENT_RATING_GOOD, models.Comment.COMMENT_RATING_EXCELLENT]))
 
 
 class CartFactory(DjangoModelFactory):

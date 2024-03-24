@@ -222,7 +222,7 @@ class AddressAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'get_content_object', 'product', 'status', 'reply_to', 'created_datetime']
+    list_display = ['id', 'title', 'get_content_object', 'product', 'status', 'reply_to', 'rating', 'created_datetime']
     autocomplete_fields = ['product', 'reply_to']
     ordering = ['-created_datetime']
     search_fields = ['title']

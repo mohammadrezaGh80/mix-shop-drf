@@ -213,6 +213,19 @@ class Comment(MPTTModel):
         (COMMENT_STATUS_NOT_APPROVED, _("Not approved"))
     ]
 
+    COMMENT_RATING_VERY_BAD = 1
+    COMMENT_RATING_BAD = 2
+    COMMENT_RATING_NORMAL = 3
+    COMMENT_RATING_GOOD = 4
+    COMMENT_RATING_EXCELLENT = 5
+    COMMENT_RATING = [
+        (COMMENT_RATING_VERY_BAD, _('Very bad')),
+        (COMMENT_RATING_BAD, _('Bad')),
+        (COMMENT_RATING_NORMAL, _('Normal')),
+        (COMMENT_RATING_GOOD, _('Good')),
+        (COMMENT_RATING_EXCELLENT, _('Excellent'))
+    ]
+
     content_type = models.ForeignKey(
         ContentType, 
         on_delete=models.PROTECT, 
@@ -226,9 +239,16 @@ class Comment(MPTTModel):
     body = models.TextField(verbose_name=_("Body"))
     status = models.CharField(max_length=2, choices=COMMENT_STATUS, default=COMMENT_STATUS_WAITING, verbose_name=_("Status"))
     reply_to = TreeForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies', verbose_name=_("Reply to"))
+    rating = models.IntegerField(choices=COMMENT_RATING, default=COMMENT_RATING_NORMAL, null=True, blank=True, verbose_name=_("Rating"))
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
+
+    def clean(self):
+        super().clean()
+
+        if self.reply_to and self.rating:
+            raise ValidationError(_('A comment that is a reply cannot be rating.'))
 
     def __str__(self):
         return f"{self.title}({self.body[:15] + '...' if len(self.body) > 15 else self.body})"

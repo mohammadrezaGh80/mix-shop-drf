@@ -298,7 +298,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'display_name', 'user_type', 'title', 'body', 'reply_to', 'replies']
+        fields = ['id', 'display_name', 'user_type', 'title', 'body', 'rating', 'reply_to', 'replies']
         extra_kwargs = {
             'reply_to': {'write_only': True}
         }
@@ -324,6 +324,16 @@ class CommentSerializer(serializers.ModelSerializer):
 
         return reply_to
     
+    def validate(self, attrs):
+        instance = Comment(**attrs)
+
+        try:
+            instance.clean()
+        except ValidationError as e:
+            raise serializers.ValidationError({"detail": e.messages})
+
+        return super().validate(attrs)
+    
     def create(self, validated_data):
         product_pk = self.context.get('product_pk')
         user = self.context.get('user')
@@ -339,8 +349,8 @@ class CommentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'display_name', 'user_type', 'title', 'body', 'reply_to']
-        read_only_fields = ['reply_to']
+        fields = ['id', 'reply_to', 'display_name', 'user_type', 'title', 'body', 'rating']
+        read_only_fields = ['reply_to', 'rating']
     
     def get_user_type(self, comment):
         return comment.content_type.model_class().__name__
