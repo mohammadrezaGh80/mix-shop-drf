@@ -16,6 +16,7 @@ from .models import Category, Comment, Customer, Address, Product, ProductImage,
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, SellerFilter, ProductFilter
 from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, ProductImagePermission
+from .ordering import ProductOrderingFilter
 
 
 class CustomerViewSet(ModelViewSet):
@@ -251,8 +252,9 @@ class CategoryViewSet(ModelViewSet):
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.select_related('seller').select_related('category').order_by('-created_datetime')
     pagination_class = CustomLimitOffsetPagination
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, ProductOrderingFilter]
     filterset_class = ProductFilter
+    ordering_fields = ['price', 'inventory', 'created_datetime']
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -295,7 +297,6 @@ class ProductViewSet(ModelViewSet):
 
 class CommentViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'post', 'delete', 'patch']
-    serializer_class = serializers.CommentSerializer
     pagination_class = CustomLimitOffsetPagination
 
     def get_queryset(self):
