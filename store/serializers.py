@@ -408,7 +408,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'title','slug' ,'category', 'thumbnail', 'seller' ,'price', 'status']
+        fields = ['id', 'title','slug' ,'category', 'thumbnail', 'seller' ,'price', 'viewer', 'status']
 
     def get_status(self, product):
         return 'Available' if product.inventory > 0 else 'Unavailable'
@@ -431,7 +431,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'title','slug' ,'category', 'images', 'seller' ,'price', 'status', 'inventory', 'description', 'specifications', 'comments']
+        fields = ['id', 'title','slug' ,'category', 'images', 'seller' ,'price', 'status', 'inventory', 'description', 'viewer', 'specifications', 'comments']
 
     def get_status(self, product):
         return 'Available' if product.inventory > 0 else 'Unavailable'

@@ -254,7 +254,7 @@ class ProductViewSet(ModelViewSet):
     pagination_class = CustomLimitOffsetPagination
     filter_backends = [DjangoFilterBackend, ProductOrderingFilter]
     filterset_class = ProductFilter
-    ordering_fields = ['price', 'inventory', 'created_datetime']
+    ordering_fields = ['price', 'inventory', 'created_datetime', 'viewer']
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -286,6 +286,13 @@ class ProductViewSet(ModelViewSet):
         elif self.action in ['update', 'partial_update', 'destroy']:
             return [IsAdminUserOrSellerOwner()]
         return super().get_permissions()
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.viewer += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
     
     @action(detail=False, url_path='upload-image', methods=['POST'], permission_classes=[IsAdminUserOrSeller])
     def upload_image(self, request, *args, **kwargs):

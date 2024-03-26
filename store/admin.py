@@ -176,7 +176,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'category', 'seller', 'price', 'inventory', 'num_of_comments', 'created_datetime']
+    list_display = ['title', 'slug', 'category', 'seller', 'price', 'inventory', 'num_of_comments', 'viewer', 'created_datetime']
     list_per_page = 15
     list_filter = [InventoryFilter]
     autocomplete_fields = ['category']
@@ -184,6 +184,7 @@ class ProductAdmin(admin.ModelAdmin):
         'slug': ['title']
     }
     search_fields = ['title']
+    readonly_fields = ['viewer']
 
     def get_queryset(self, request):
         return super().get_queryset(request)\
