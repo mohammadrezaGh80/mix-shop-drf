@@ -295,10 +295,12 @@ class CommentSerializer(serializers.ModelSerializer):
     display_name = CommentObjectRelatedField(source='content_object', read_only=True)
     user_type = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
+    count_likes = serializers.SerializerMethodField()
+    count_dislikes = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ['id', 'display_name', 'user_type', 'title', 'body', 'rating', 'reply_to', 'replies']
+        fields = ['id', 'display_name', 'user_type', 'title', 'body', 'rating', 'count_likes', 'count_dislikes', 'reply_to', 'replies']
         extra_kwargs = {
             'reply_to': {'write_only': True}
         }
@@ -311,6 +313,12 @@ class CommentSerializer(serializers.ModelSerializer):
        
     def get_user_type(self, comment):
         return comment.content_type.model_class().__name__
+    
+    def get_count_likes(self, comment):
+        return comment.likes.count()
+    
+    def get_count_dislikes(self, comment):
+        return comment.dislikes.count()
     
     def validate_reply_to(self, reply_to):
         if reply_to:

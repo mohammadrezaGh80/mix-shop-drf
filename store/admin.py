@@ -1,5 +1,7 @@
 from typing import Any
 from django.contrib import admin
+from django.db.models.query import QuerySet
+from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from django.db.models import Count
 from django.urls import reverse
@@ -9,7 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from datetime import date
 
-from .models import Customer, Seller, Category, Product, Address, Comment, Cart, CartItem, Order, OrderItem, Person, ProductImage
+from .models import Customer, Seller, Category, Product, Address, Comment, Cart, CartItem, Order, OrderItem, Person, ProductImage, CommentLike, CommentDislike
 
 
 # Custom filters
@@ -206,14 +208,14 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ['get_full_name', 'get_user_type', 'province', 'city', 'plaque', 'postal_code']
+    list_display = ['get_content_object', 'get_user_type', 'province', 'city', 'plaque', 'postal_code']
     list_per_page = 15
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('content_object').select_related('content_type')
 
-    @admin.display(description='full_name')
-    def get_full_name(self, address):
+    @admin.display(description='user')
+    def get_content_object(self, address):
         return address.content_object
     
     @admin.display(description='user_type')
@@ -279,3 +281,29 @@ class ProductImageAdmin(admin.ModelAdmin):
     autocomplete_fields = ['product']
     list_select_related = ['product']
     list_per_page = 15
+
+
+@admin.register(CommentLike)
+class CommentLikeAdmin(admin.ModelAdmin):
+    list_display = ['get_content_object', 'comment']
+    list_per_page = 15
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('comment').prefetch_related('content_object')
+    
+    @admin.display(description='user')
+    def get_content_object(self, comment):
+        return comment.content_object
+
+
+@admin.register(CommentDislike)
+class CommentDislikeAdmin(admin.ModelAdmin):
+    list_display = ['get_content_object', 'comment']
+    list_per_page = 15
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('comment').prefetch_related('content_object')
+    
+    @admin.display(description='user')
+    def get_content_object(self, comment):
+        return comment.content_object

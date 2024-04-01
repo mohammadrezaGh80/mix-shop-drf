@@ -76,6 +76,8 @@ class Customer(Person):
 
     addresses = GenericRelation(Address, related_query_name="customer")
     comments = GenericRelation('Comment', related_query_name="customer")
+    comment_likes = GenericRelation('CommentLike', related_query_name="customer")
+    comment_dislikes = GenericRelation('CommentDislike', related_query_name="customer")
 
     def __str__(self):
         return self.full_name if self.full_name else 'Unknown'
@@ -106,6 +108,17 @@ class Seller(Person):
 
     addresses = GenericRelation(Address, related_query_name="seller")
     comments = GenericRelation('Comment', related_query_name="seller")
+    comment_likes = GenericRelation('CommentLike', related_query_name="seller")
+    comment_dislikes = GenericRelation('CommentDislike', related_query_name="seller")
+
+    def clean(self):
+        super().clean()
+
+        if not self.pk and self.status == self.SELLER_STATUS_REJECTED:
+            raise ValidationError(_("When creating a seller, its status can't be set to rejected."))
+
+        if self.status in [self.SELLER_STATUS_WAITING, self.SELLER_STATUS_REJECTED] and self.products.count() > 0:
+            raise ValidationError(_("You can't change status this seller because there is some products relating this seller, Please remove them first."))
 
     def __str__(self):
         return f"{self.company_name}({self.national_code})"
@@ -229,7 +242,7 @@ class Comment(MPTTModel):
 
     content_type = models.ForeignKey(
         ContentType, 
-        on_delete=models.PROTECT, 
+        on_delete=models.CASCADE, 
         limit_choices_to=models.Q(app_label="store", model="customer") | models.Q(app_label="store", model="seller")
     )
     object_id = models.PositiveIntegerField()
@@ -240,16 +253,19 @@ class Comment(MPTTModel):
     body = models.TextField(verbose_name=_("Body"))
     status = models.CharField(max_length=2, choices=COMMENT_STATUS, default=COMMENT_STATUS_WAITING, verbose_name=_("Status"))
     reply_to = TreeForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies', verbose_name=_("Reply to"))
-    rating = models.IntegerField(choices=COMMENT_RATING, default=COMMENT_RATING_NORMAL, null=True, blank=True, verbose_name=_("Rating"))
+    rating = models.IntegerField(choices=COMMENT_RATING, null=True, blank=True, verbose_name=_("Rating"))
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
+
 
     def clean(self):
         super().clean()
 
         if self.reply_to and self.rating:
-            raise ValidationError(_('A comment that is a reply cannot be rating.'))
+            raise ValidationError(_("A comment that is a reply cannot be rating."))
+        elif not self.rating and not self.reply_to:
+            raise ValidationError( _("A comment that isn't a reply should be rating."))
 
     def __str__(self):
         return f"{self.title}({self.body[:15] + '...' if len(self.body) > 15 else self.body})"
@@ -261,6 +277,48 @@ class Comment(MPTTModel):
     class Meta:
         verbose_name = _("Comment")
         verbose_name_plural = _("Comments")
+
+
+class CommentLike(models.Model):
+    content_type = models.ForeignKey(
+        ContentType, 
+        on_delete=models.CASCADE, 
+        limit_choices_to=models.Q(app_label="store", model="customer") | models.Q(app_label="store", model="seller")
+    )
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='likes', verbose_name=_("Comment"))
+
+    created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
+    modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
+
+    def __str__(self):
+        return f"{self.content_object} likes {self.comment}"
+
+    class Meta:
+        verbose_name = _("Comment like")
+        verbose_name_plural = _("Comment likes")
+
+
+class CommentDislike(models.Model):
+    content_type = models.ForeignKey(
+        ContentType, 
+        on_delete=models.CASCADE, 
+        limit_choices_to=models.Q(app_label="store", model="customer") | models.Q(app_label="store", model="seller")
+    )
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='dislikes', verbose_name=_("Comment"))
+
+    created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
+    modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
+
+    def __str__(self):
+        return f"{self.content_object} dislikes {self.comment}"
+
+    class Meta:
+        verbose_name = _("Comment dislike")
+        verbose_name_plural = _("Comment dislikes")
 
 
 class Cart(models.Model):

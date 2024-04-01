@@ -7,12 +7,13 @@ from django.http import Http404
 from rest_framework import generics
 from django.db.models import Prefetch
 from django.utils.translation import gettext as _
+from rest_framework.views import APIView
 
 from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
 
 from . import serializers
-from .models import Category, Comment, Customer, Address, Product, ProductImage, Seller
+from .models import Category, Comment, CommentLike, CommentDislike, Customer, Address, Product, ProductImage, Seller
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, SellerFilter, ProductFilter
 from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, ProductImagePermission
@@ -133,7 +134,7 @@ class SellerViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.products.count() > 0:
-            return Response({'detail': _('There is some products relating this seller. Please remove them first.')})
+            return Response({'detail': _('There is some products relating this seller, Please remove them first.')})
         
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -156,7 +157,7 @@ class SellerViewSet(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == 'DELETE':
             if seller.products.count() > 0:
-                return Response({'detail': _('There is some products relating to you. Please remove them first.')})
+                return Response({'detail': _('There is some products relating to you, Please remove them first.')})
             seller.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         
@@ -243,7 +244,7 @@ class CategoryViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.get_products_count_of_category() > 0:
-            return Response({'detail': _('There is some products relating this category. Please remove them first.')})
+            return Response({'detail': _('There is some products relating this category, Please remove them first.')})
         
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -266,7 +267,7 @@ class ProductViewSet(ModelViewSet):
         elif self.action == 'retrieve':
             return queryset.prefetch_related(
                 Prefetch('comments',
-                queryset=Comment.objects.prefetch_related('content_object').select_related('content_type').filter(status=Comment.COMMENT_STATUS_APPROVED, reply_to__isnull=True))
+                queryset=Comment.objects.prefetch_related('content_object').select_related('content_type').prefetch_related('likes').prefetch_related('dislikes').filter(status=Comment.COMMENT_STATUS_APPROVED, reply_to__isnull=True))
             ).prefetch_related('images')
             
         return queryset
@@ -322,7 +323,7 @@ class CommentViewSet(ModelViewSet):
                     product_id=product_pk,
                     status=Comment.COMMENT_STATUS_APPROVED)
         
-        return queryset.select_related('content_type').prefetch_related('content_object')
+        return queryset.select_related('content_type').prefetch_related('content_object').prefetch_related('likes').prefetch_related('dislikes').order_by('-created_datetime')
     
     def get_serializer_class(self):
         if self.action in ['retrieve', 'partial_update']:
@@ -339,7 +340,7 @@ class CommentViewSet(ModelViewSet):
         
         if self.action == 'create':
             user = self.request.user
-            if getattr(user, 'seller', None) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
+            if getattr(user, 'seller', False) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
                 user_type = user.seller
             else:
                 user_type = user.customer
@@ -392,3 +393,85 @@ class ProductImageViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {'request': self.request, 'product_pk': self.kwargs.get('product_pk')}
     
+
+class CommentLikeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        product_pk = self.kwargs.get('product_pk')
+        comment_pk = self.kwargs.get('comment_pk')
+
+        try:
+            product = Product.objects.get(id=product_pk)
+        except Product.DoesNotExist:
+            raise Http404
+        
+        try:
+            comment = Comment.objects.get(id=comment_pk, product_id=product_pk)
+        except Comment.DoesNotExist:
+            return Response({'detail': _("There isn't comment with id=%(comment_id)d in the %(product_title)s product.") % {'comment_id': comment_pk, 'product_title': product.title}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if comment.reply_to:
+            return Response({'detail': _('A comment that is a reply cannot be liked.')}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = self.request.user
+        if getattr(user, 'seller', False) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
+            user_type = user.seller
+            queryset = CommentLike.objects.filter(
+                seller=user_type, comment_id=comment_pk
+            )
+        else:
+            user_type = user.customer
+            queryset = CommentLike.objects.filter(
+                customer=user_type, comment_id=comment_pk
+            )
+
+        if queryset.exists():
+            queryset.first().delete()
+            return Response({'detail': _('The comment like was removed.')}, status=status.HTTP_200_OK)
+        else:
+            CommentLike.objects.create(content_object=user_type, comment_id=comment_pk)
+
+        return Response({'detail': _('The comment was successfully liked.')}, status=status.HTTP_201_CREATED)
+
+
+class CommentDisLikeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        product_pk = self.kwargs.get('product_pk')
+        comment_pk = self.kwargs.get('comment_pk')
+
+        try:
+            product = Product.objects.get(id=product_pk)
+        except Product.DoesNotExist:
+            raise Http404
+        
+        try:
+            comment = Comment.objects.get(id=comment_pk, product_id=product_pk)
+        except Comment.DoesNotExist:
+            return Response({'detail': _("There isn't comment with id=%(comment_id)d in the %(product_title)s product.") % {'comment_id': comment_pk, 'product_title': product.title}}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if comment.reply_to:
+            return Response({'detail': _('A comment that is a reply cannot be disliked.')}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = self.request.user
+        if getattr(user, 'seller', False) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
+            user_type = user.seller
+            queryset = CommentDislike.objects.filter(
+                seller=user_type, comment_id=comment_pk
+            )
+        else:
+            user_type = user.customer
+            queryset = CommentDislike.objects.filter(
+                customer=user_type, comment_id=comment_pk
+            )
+
+        if queryset.exists():
+            queryset.first().delete()
+            return Response({'detail': _('The comment dislike was removed.')}, status=status.HTTP_200_OK)
+        else:
+            CommentDislike.objects.create(content_object=user_type, comment_id=comment_pk)
+
+        return Response({'detail': _('The comment was successfully disliked.')}, status=status.HTTP_201_CREATED)
+

@@ -26,4 +26,6 @@ products_router.register('images', views.ProductImageViewSet, basename='product-
 
 urlpatterns = router.urls + customers_router.urls + sellers_router.urls + products_router.urls + [
     path('request-seller/', views.RequestSellerGenericAPIView.as_view(), name='seller-request'),
+    path('products/<int:product_pk>/comments/<int:comment_pk>/like/', views.CommentLikeAPIView.as_view(), name='comment-like'),
+    path('products/<int:product_pk>/comments/<int:comment_pk>/dislike/', views.CommentDisLikeAPIView.as_view(), name='comment-dislike')
 ]
