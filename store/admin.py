@@ -76,7 +76,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request)\
-            .annotate(comments_count=Count('comments')).prefetch_related('addresses')
+            .annotate(comments_count=Count('comments', distinct=True), addresses_count=Count('addresses', distinct=True)).prefetch_related('addresses')
             
     @admin.display(description='# comments', ordering='comments_count')
     def num_of_comments(self, customer):
@@ -84,24 +84,21 @@ class CustomerAdmin(admin.ModelAdmin):
             reverse('admin:store_comment_changelist')
             + '?'
             + urlencode({
-                "object_id": customer.id
+                "customer": customer.id
             })
         )
         return format_html('<a href={}>{}</a>', url, customer.comments_count)
 
-    @admin.display(description='# addresses') # TODO: ordering
+    @admin.display(description='# addresses', ordering='addresses_count')
     def num_of_addresses(self, customer):
-        content_type_id = ContentType.objects.get_for_model(customer).id
-        
         url = (
             reverse('admin:store_address_changelist')
             + '?'
             + urlencode({
-                'content_type_id': content_type_id,
-                'object_id': customer.id
+                'customer': customer.id
             })
         )
-        return format_html('<a href={}>{}</a>', url, customer.addresses.count())
+        return format_html('<a href={}>{}</a>', url, customer.addresses_count)
     
     @admin.display(description='phone', ordering='user__phone')
     def get_phone(self, customer):
@@ -116,7 +113,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Seller)
 class SellerAdmin(admin.ModelAdmin):
-    list_display = ['company_name', 'first_name', 'last_name', 'national_code', 'gender', 'status', 'num_of_addresses']
+    list_display = ['company_name', 'first_name', 'last_name', 'national_code', 'gender', 'status', 'num_of_addresses', 'num_of_products']
     list_editable = ['gender']
     list_per_page = 10
     list_filter = [GenderFilter]
@@ -124,21 +121,30 @@ class SellerAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request)\
-            .annotate(addresses_count=Count('addresses'))
+            .annotate(addresses_count=Count('addresses', distinct=True), products_count=Count('products', distinct=True))
 
     @admin.display(description='# addresses', ordering='addresses_count')
-    def num_of_addresses(self, seller):
-        content_type_id = ContentType.objects.get_for_model(seller).id
-        
+    def num_of_addresses(self, seller):        
         url = (
             reverse('admin:store_address_changelist')
             + '?'
             + urlencode({
-                'content_type_id': content_type_id,
-                'object_id': seller.id
+                'seller': seller.id
             })
         )
         return format_html('<a href={}>{}</a>', url, seller.addresses_count)
+    
+    @admin.display(description='# products', ordering='products_count')
+    def num_of_products(self, seller):
+        url = (
+            reverse('admin:store_product_changelist')
+            + '?'
+            + urlencode({
+                'seller': seller.id
+            })
+        )
+
+        return format_html('<a href={}>{}</a>', url, seller.products_count)
 
 
 @admin.register(Category)
@@ -225,18 +231,43 @@ class AddressAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'get_content_object', 'product', 'status', 'reply_to', 'rating', 'created_datetime']
+    list_display = ['id', 'title', 'get_content_object', 'product', 'status', 'reply_to', 'num_of_likes', 'num_of_dislikes', 'created_datetime']
     autocomplete_fields = ['product', 'reply_to']
     ordering = ['-created_datetime']
     search_fields = ['title']
     list_per_page = 15
     
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('content_object').select_related('product')
+        return super().get_queryset(request).prefetch_related('content_object', 'likes', 'dislikes')\
+               .select_related('product', 'reply_to').annotate(likes_count=Count('likes'), dislikes_count=Count('dislikes'))
 
     @admin.display(description='user')
     def get_content_object(self, commnet):
         return commnet.content_object
+    
+    @admin.display(description='# likes', ordering='likes_count')
+    def num_of_likes(self, comment):
+        url = (
+            reverse('admin:store_commentlike_changelist')
+            + '?'
+            + urlencode({
+                'comment': comment.id
+            })
+        )
+
+        return format_html('<a href={}>{}</a>', url, comment.likes_count)
+    
+    @admin.display(description='# dislikes', ordering='dislikes_count')
+    def num_of_dislikes(self, comment):
+        url = (
+            reverse('admin:store_commentdislike_changelist')
+            + '?'
+            + urlencode({
+                'comment': comment.id
+            })
+        )
+
+        return format_html('<a href={}>{}</a>', url, comment.dislikes_count)
 
 
 @admin.register(Cart)
