@@ -291,7 +291,7 @@ class ProductViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.viewer += 1
-        instance.save()
+        instance.save(update_fields=['viewer'])
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
@@ -330,13 +330,19 @@ class CommentViewSet(ModelViewSet):
             return serializers.CommentDetailSerializer
         return serializers.CommentSerializer
     
-    def get_serializer_context(self):
+    @cached_property
+    def product(self):
         product_pk = self.kwargs.get('product_pk')
         try:
             product_pk = int(product_pk)
             product = Product.objects.get(id=product_pk)
         except (ValueError, Product.DoesNotExist):
             raise Http404
+        else:
+            return product
+    
+    def get_serializer_context(self):
+        product = self.product
         
         if self.action == 'create':
             user = self.request.user
@@ -344,7 +350,7 @@ class CommentViewSet(ModelViewSet):
                 user_type = user.seller
             else:
                 user_type = user.customer
-            return {'product_pk': product_pk,
+            return {'product': product,
                     'user': user_type}
         return super().get_serializer_context()
     

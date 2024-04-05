@@ -322,8 +322,7 @@ class CommentSerializer(serializers.ModelSerializer):
     
     def validate_reply_to(self, reply_to):
         if reply_to:
-            product_pk = self.context.get('product_pk')
-            product = get_object_or_404(Product, pk=product_pk)
+            product = self.context.get('product')
 
             try:
                 product.comments.get(id=reply_to.id)
@@ -343,10 +342,10 @@ class CommentSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
     
     def create(self, validated_data):
-        product_pk = self.context.get('product_pk')
+        product = self.context.get('product')
         user = self.context.get('user')
         
-        validated_data['product_id'] = product_pk
+        validated_data['product'] = product
         validated_data['content_object'] = user
         return super().create(validated_data)
 
@@ -495,7 +494,7 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         title = validated_data.get('title')
         if title:
             instance.slug = slugify(title)
-            instance.save()
+            instance.save(update_fields=['slug'])
 
         image_ids = validated_data.pop('image_ids', [])
         product_images = []
