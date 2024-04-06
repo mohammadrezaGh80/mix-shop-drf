@@ -90,6 +90,7 @@ class ProductFilter(django_filters.FilterSet):
     price_max = django_filters.NumberFilter(field_name='price', lookup_expr='lte', label='price_max')
     has_inventory = django_filters.BooleanFilter(field_name='inventory', method='filter_has_inventory', label='has_inventory')
     category = django_filters.NumberFilter(field_name='category', method='filter_category', label='category')
+    seller = django_filters.NumberFilter(field_name='seller', lookup_expr='exact', label='seller')
 
     def filter_has_inventory(self, queryset, field_name, value):
         filter_condition = {}

@@ -8,12 +8,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAdminUser
 
 from .serializers import OTPSerializer, VerifyOTPSerializer, CustomTokenObtainPairSerializer, \
                           SetPasswordSerializer, UserSerializer, UserCreateSerializer
 from .models import OTP
 from .throttles import RequestOTPThrottle
-from .permissions import IsCustomAdminUser
 from .paginations import CustomLimitOffsetPagination
 
 User = get_user_model()
@@ -109,24 +109,23 @@ class SetPasswordGenericAPIView(generics.GenericAPIView):
 
 class UserViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'post', 'put', 'delete']
-    serializer_class = UserSerializer
     queryset = User.objects.all().order_by('-id')
-    permission_classes = [IsCustomAdminUser]  
+    permission_classes = [IsAdminUser]  
     pagination_class = CustomLimitOffsetPagination
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return UserCreateSerializer
-        return self.serializer_class
+        return UserSerializer
 
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request, *args, **kwargs):
         user = request.user
         if request.method == 'GET':
-            serializer = self.serializer_class(user)
+            serializer = UserSerializer(user)
             return Response(serializer.data)
         elif request.method == 'PUT':
-            serializer = self.serializer_class(user, data=request.data)
+            serializer = UserSerializer(user, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
