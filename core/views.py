@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status, generics
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -15,6 +16,7 @@ from .serializers import OTPSerializer, VerifyOTPSerializer, CustomTokenObtainPa
 from .models import OTP
 from .throttles import RequestOTPThrottle
 from .paginations import CustomLimitOffsetPagination
+from store.models import Seller
 
 User = get_user_model()
 
@@ -117,6 +119,18 @@ class UserViewSet(ModelViewSet):
         if self.request.method == 'POST':
             return UserCreateSerializer
         return UserSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        if getattr(instance, 'seller', False) and instance.seller.status == Seller.SELLER_STATUS_ACCEPTED and instance.seller.products.count() > 0:
+            return Response({'detail': _('There is some products relating this seller, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
+        elif (getattr(instance, 'seller', False) and instance.seller.status != Seller.SELLER_STATUS_ACCEPTED) or not getattr(instance, 'seller', False):
+            if instance.customer.orders.count() > 0: # TODO: just orders that status is unpaind
+                return Response({'detail': _('There is some orders relating this customer, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
+
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def me(self, request, *args, **kwargs):

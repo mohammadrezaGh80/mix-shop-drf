@@ -134,7 +134,7 @@ class SellerViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.products.count() > 0:
-            return Response({'detail': _('There is some products relating this seller, Please remove them first.')})
+            return Response({'detail': _('There is some products relating this seller, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
         
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -157,7 +157,7 @@ class SellerViewSet(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == 'DELETE':
             if seller.products.count() > 0:
-                return Response({'detail': _('There is some products relating to you, Please remove them first.')})
+                return Response({'detail': _('There is some products relating to you, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
             seller.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         
@@ -244,7 +244,7 @@ class CategoryViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.get_products_count_of_category() > 0:
-            return Response({'detail': _('There is some products relating this category, Please remove them first.')})
+            return Response({'detail': _('There is some products relating this category, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
         
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -294,6 +294,15 @@ class ProductViewSet(ModelViewSet):
         instance.save(update_fields=['viewer'])
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        if instance.order_items.count() > 0:
+            return Response({'detail': _('There is some order items relating this product, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
+        
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
     @action(detail=False, url_path='upload-image', methods=['POST'], permission_classes=[IsAdminUserOrSeller])
     def upload_image(self, request, *args, **kwargs):

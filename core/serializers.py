@@ -5,6 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext as _
 
 from .models import OTP
+from store.models import Seller
 
 User = get_user_model()
 
@@ -94,7 +95,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_role(self, user):
         if user.is_staff:
             return 'admin'
-        elif getattr(user, 'seller', False):
+        elif getattr(user, 'seller', False) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
             return 'seller'
         return 'customer'
 
