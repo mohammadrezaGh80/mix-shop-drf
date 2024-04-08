@@ -54,6 +54,7 @@ class CustomerFactory(DjangoModelFactory):
     wallet_amount = factory.LazyFunction(lambda: random.randint(100, 99999900) * 10)
 
 
+@factory.django.mute_signals(signals.post_save, signals.pre_save)
 class SellerFactory(DjangoModelFactory):
     class Meta:
         model = models.Seller

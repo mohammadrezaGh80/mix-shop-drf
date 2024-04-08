@@ -409,7 +409,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     seller = serializers.CharField(source='seller.company_name', read_only=True)
-    category = serializers.CharField(source='category.title', read_only=True)
+    category = CategorySerializer(read_only=True)
     status = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
 
