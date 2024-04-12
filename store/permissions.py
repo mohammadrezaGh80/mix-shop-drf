@@ -1,6 +1,8 @@
 from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+from django.utils.translation import gettext as _
 
 from .models import Seller, Product
 
@@ -8,11 +10,16 @@ from .models import Seller, Product
 class IsCustomerOrSeller(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return bool(
-            request.method in permissions.SAFE_METHODS or
-            request.user and request.user.is_authenticated and
-            not getattr(request.user, 'seller', False)
-        )
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        elif request.user and not request.user.is_authenticated:
+            return False
+        elif getattr(request.user, 'seller', False) and request.user.seller.status == Seller.SELLER_STATUS_WAITING:
+            raise PermissionDenied(detail=_('Your request is under review.'))
+        elif getattr(request.user, 'seller', False) and request.user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
+            raise PermissionDenied(detail=_('You are currently a seller.'))
+        return True
+    
     
 class IsSeller(permissions.BasePermission):
 

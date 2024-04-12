@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-10 17:55+0330\n"
-"PO-Revision-Date: 2024-03-10 17:55+0330\n"
-"Last-Translator: Anonymous User <mohammadreza6@gmail.com>\n"
+"POT-Creation-Date: 2024-04-12 08:49+0330\n"
+"PO-Revision-Date: 2024-04-12 08:50+0330\n"
+"Last-Translator: Anonymous User <None>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -19,33 +19,38 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Translated-Using: django-rosetta 0.10.0\n"
 
-#: admin.py:22
-msgid "Expired"
-msgstr ""
-
 #: admin.py:23
-msgid "Valid"
-msgstr ""
+msgid "Expired"
+msgstr "منقضی شده"
 
-#: admin.py:40
-msgid "Personal info"
-msgstr ""
+#: admin.py:24
+msgid "Valid"
+msgstr "معتبر"
 
 #: admin.py:41
+msgid "Personal info"
+msgstr "اطلاعات شخصی"
+
+#: admin.py:42
 msgid "Permissions"
-msgstr ""
+msgstr "مجوز ها"
 
-#: admin.py:63
+#: admin.py:64
 #, python-format
+#| msgid "%(update_count)d accounts of users activated"
 msgid "%(update_count)d accounts of users activated."
-msgstr " حساب %(update_count)d نفر از کاربران فعال شد."
+msgstr " حساب کاربری %(update_count)d نفر از کاربران فعال شد."
 
-#: admin.py:71
+#: admin.py:72
+#| msgid "You cannot administer two or more users at the same time"
 msgid "You cannot administer two or more users at the same time."
 msgstr "دو یا چند کاربر را نمی توانید به صورت همزمان ادمین کنید."
 
-#: admin.py:78
+#: admin.py:79
 #, python-format
+#| msgid ""
+#| "User(phone number: %(phone_number)s) does not have a password, please enter "
+#| "a password for the user"
 msgid ""
 "User(phone number: %(phone_number)s) does not have a password, please enter "
 "a password for the user."
@@ -53,101 +58,150 @@ msgstr ""
 "کاربر(شماره تلفن:  %(phone_number)s) رمز عبوری ندارد، لطفا یک رمز عبور برای "
 "کاربر وارد کنید."
 
-#: admin.py:89
+#: admin.py:91
 #, python-format
 #| msgid ""
-#| "User(phone number: %(phone_number)s) does not have a password, please enter "
-#| "a password for the user."
+#| "User(phone number: %(phone_number)s) have been successfully admin"
 msgid "User(phone number: %(phone_number)s) have been successfully admin."
 msgstr "کاربر(شماره تلفن:  %(phone_number)s) با موفقیت ادمین شد."
 
-#: admin.py:96
+#: admin.py:101
 #, python-format
+#| msgid "%(update_count)d users have been removed from the admin"
 msgid "%(update_count)d users have been removed from the admin."
 msgstr "%(update_count)d نفر از کاربران از ادمینی کنار گذاشته شدند."
 
 #: backends.py:19
+#| msgid "Your account is not active"
 msgid "Your account is not active."
-msgstr ""
+msgstr "حساب کاربری شما غیرفعال است."
 
 #: backends.py:23
-msgid "Username and Password is incorrect!"
-msgstr ""
+#| msgid "There isn't any user with entered username and password"
+msgid "There isn't any user with entered username and password."
+msgstr "کاربری با نام کاربری و رمزعبور وارد شده وجود ندارد."
 
 #: models.py:21
-msgid "Users must have an phone number."
-msgstr ""
+#| msgid "Users must have a phone number"
+msgid "Users must have a phone number."
+msgstr "کاربران باید شماره تلفن داشته باشند."
 
 #: models.py:60 models.py:97
 msgid "Phone"
-msgstr ""
+msgstr "شماره تلفن"
 
 #: models.py:61
 msgid "Email"
-msgstr ""
+msgstr "ایمیل"
 
 #: models.py:64
 msgid "Is active"
 msgstr ""
 
 #: models.py:66
+#| msgid ""
+#| "Designates whether this user should be treated as active. Unselect this "
+#| "instead of deleting accounts"
 msgid ""
 "Designates whether this user should be treated as active. Unselect this "
 "instead of deleting accounts."
 msgstr ""
+"مشخص می کند که آیا این کاربر باید به عنوان فعال در نظر گرفته شود. به جای حذف"
+" حساب‌ها، این مورد را لغو انتخاب کنید."
 
 #: models.py:71
 msgid "Is staff"
 msgstr ""
 
 #: models.py:72
+#| msgid "Designates whether the user can log into this admin site"
 msgid "Designates whether the user can log into this admin site."
-msgstr ""
+msgstr "مشخص می کند که آیا کاربر می تواند به این سایت مدیریت وارد شود یا خیر."
 
 #: models.py:84
 msgid "User"
-msgstr ""
+msgstr "کاربر"
 
 #: models.py:85
 msgid "Users"
-msgstr ""
+msgstr "کاربران"
 
-#: models.py:96
+#: models.py:96 serializers.py:32
 msgid "Request id"
-msgstr ""
+msgstr "شناسه درخواست"
 
-#: models.py:98
+#: models.py:98 serializers.py:46 serializers.py:63
 msgid "Password"
-msgstr ""
+msgstr "رمزعبور"
 
 #: models.py:100
 msgid "Created datetime"
-msgstr ""
+msgstr "تاریخ و زمان ایجاد شده"
 
 #: models.py:101
 msgid "Expired datetime"
-msgstr ""
+msgstr "تاریخ و زمان منقضی شده"
 
 #: models.py:114
 msgid "One time password"
-msgstr ""
+msgstr "رمزعبور یکبار مصرف"
 
 #: models.py:115
 msgid "One time passwords"
-msgstr ""
+msgstr "رمزعبور های یکبار مصرف"
 
-#: serializers.py:91
+#: serializers.py:45
+#| msgid "User"
+msgid "Username"
+msgstr "کاربر"
+
+#: serializers.py:99
+#| msgid "This email is already chosen, please enter another email"
 msgid "This email is already chosen, please enter another email."
-msgstr ""
+msgstr "این ایمیل قبلاً انتخاب شده است، لطفاً ایمیل دیگری وارد کنید."
 
 #: validators.py:8
+#| msgid ""
+#| "Enter a valid phone number, phone number must have 11 digits which starts "
+#| "with the number 09"
 msgid ""
 "Enter a valid phone number, phone number must have 11 digits which starts "
 "with the number 09."
 msgstr ""
+"یک شماره تلفن معتبر وارد کنید، شماره تلفن باید دارای 11 رقم باشد که با شماره"
+" 09 شروع می شود."
 
 #: validators.py:16
+#| msgid ""
+#| "Enter a valid national code, National code must be 10 digits which start "
+#| "with one of the numbers between 1 and 9"
 msgid ""
 "Enter a valid national code, National code must be 10 digits which start "
 "with one of the numbers between 1 and 9."
 msgstr ""
+"یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1"
+" تا 9 شروع می شود."
+
+#: views.py:93
+#| msgid "Your one-time password is incorrect or has expired"
+msgid "Your one-time password is incorrect or has expired!"
+msgstr "رمزعبور یکبار مصرف شما نادرست یا منقضی شده است!"
+
+#: views.py:109
+#| msgid "Your password has been successfully changed"
+msgid "Your password has been successfully changed."
+msgstr "رمزعبور شما با موفقیت تغییر یافت."
+
+#: views.py:127
+#| msgid ""
+#| "There is some products relating this seller, Please remove them first"
+msgid "There is some products relating this seller, Please remove them first."
+msgstr ""
+"برخی از محصولات مربوط به این فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
+
+#: views.py:130
+#| msgid ""
+#| "There is some orders relating this customer, Please remove them first"
+msgid "There is some orders relating this customer, Please remove them first."
+msgstr ""
+"برخی از سفارشات مربوط به این مشتری هستند، لطفاً ابتدا آنها را حذف کنید."

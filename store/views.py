@@ -106,7 +106,7 @@ class RequestSellerGenericAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data, context={'request': request, 'user': user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'detail': 'Your request has been successfully registered.'}, status=status.HTTP_200_OK)
+        return Response({'detail': _('Your request has been successfully registered.')}, status=status.HTTP_200_OK)
 
 
 class SellerViewSet(ModelViewSet):

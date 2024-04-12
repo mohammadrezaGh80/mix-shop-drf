@@ -1,0 +1,532 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-12 08:49+0330\n"
+"PO-Revision-Date: 2024-04-12 08:52+0330\n"
+"Last-Translator: Anonymous User <None>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Translated-Using: django-rosetta 0.10.0\n"
+
+#: admin.py:24 filters.py:21 filters.py:69 models.py:54
+msgid "Male"
+msgstr "مرد"
+
+#: admin.py:25 filters.py:22 filters.py:70 models.py:55
+msgid "Female"
+msgstr "زن"
+
+#: admin.py:26 filters.py:23 models.py:56
+msgid "Not defined"
+msgstr "مشخص نشده"
+
+#: admin.py:48
+msgid "Low"
+msgstr "کم"
+
+#: admin.py:49
+msgid "Medium"
+msgstr "متوسط"
+
+#: admin.py:50
+msgid "High"
+msgstr "زیاد"
+
+#: models.py:29
+msgid "Province"
+msgstr "استان"
+
+#: models.py:30
+msgid "City"
+msgstr "شهر"
+
+#: models.py:31
+msgid "Plaque"
+msgstr "پلاک"
+
+#: models.py:32
+msgid "Postal code"
+msgstr "کد پستی"
+
+#: models.py:38
+#, python-format
+#| msgid "There isn't any %(user_type)s with id=%(object_id)d"
+msgid "There isn't any %(user_type)s with id=%(object_id)d."
+msgstr "%(user_type)s با شناسه %(object_id)d وجود ندارد."
+
+#: models.py:44
+msgid "Address"
+msgstr "آدرس"
+
+#: models.py:45
+msgid "Addresses"
+msgstr "آدرس ها"
+
+#: models.py:59 serializers.py:149 serializers.py:177
+msgid "First name"
+msgstr "نام"
+
+#: models.py:60 serializers.py:150 serializers.py:178
+msgid "Last name"
+msgstr "نام خانوادگی"
+
+#: models.py:61 serializers.py:151 serializers.py:180
+msgid "Birth date"
+msgstr "تاریخ تولد"
+
+#: models.py:62 serializers.py:152 serializers.py:179
+msgid "Profile image"
+msgstr "عکس پروفایل"
+
+#: models.py:63 serializers.py:153 serializers.py:181
+msgid "Gender"
+msgstr "جنسیت"
+
+#: models.py:74 models.py:103
+msgid "User"
+msgstr "کاربر"
+
+#: models.py:75
+msgid "Wallet amount"
+msgstr "مقدار کیف پول"
+
+#: models.py:86
+msgid "Customer"
+msgstr "مشتری"
+
+#: models.py:87
+msgid "Customers"
+msgstr "مشتریان"
+
+#: models.py:96 models.py:225
+msgid "Waiting"
+msgstr "در انتظار"
+
+#: models.py:97
+msgid "Accepted"
+msgstr "پذیرفته شده"
+
+#: models.py:98
+msgid "Rejected"
+msgstr "رد شده"
+
+#: models.py:104
+msgid "Company name"
+msgstr "نام شرکت"
+
+#: models.py:105 serializers.py:156
+msgid "CV"
+msgstr "رزومه"
+
+#: models.py:106
+msgid "National code"
+msgstr "کد ملی"
+
+#: models.py:107 models.py:254 models.py:365
+msgid "Status"
+msgstr "وضعیت"
+
+#: models.py:118
+#| msgid "When creating a seller, its status can't be set to rejected"
+msgid "When creating a seller, its status can't be set to rejected."
+msgstr "هنگام ایجاد یک فروشنده، نمی توان وضعیت آن را روی رد شده تنظیم کرد."
+
+#: models.py:121
+#| msgid ""
+#| "You can't change status this seller because there is some products relating "
+#| "this seller, Please remove them first"
+msgid ""
+"You can't change status this seller because there is some products relating "
+"this seller, Please remove them first."
+msgstr ""
+"نمی توانید وضعیت این فروشنده را تغییر دهید زیرا برخی از محصولات مربوط به این"
+" فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
+
+#: models.py:127 models.py:161
+msgid "Seller"
+msgstr "فروشنده"
+
+#: models.py:128
+msgid "Sellers"
+msgstr "فروشندگان"
+
+#: models.py:132 models.py:159 models.py:252
+msgid "Title"
+msgstr "عنوان"
+
+#: models.py:133
+msgid "Sub category"
+msgstr "زیر دسته بندی"
+
+#: models.py:154 models.py:162
+msgid "Category"
+msgstr "دسته بندی"
+
+#: models.py:155
+msgid "Categories"
+msgstr "دسته بندی ها"
+
+#: models.py:160
+msgid "Slug"
+msgstr "اسلاگ"
+
+#: models.py:163
+msgid "Description"
+msgstr "توضیحات"
+
+#: models.py:164 models.py:383
+msgid "Price"
+msgstr "قیمت"
+
+#: models.py:165
+msgid "Inventory"
+msgstr "موجودی"
+
+#: models.py:166
+msgid "Specifications"
+msgstr "خصوصیات"
+
+#: models.py:167
+msgid "Viewer"
+msgstr "بیننده"
+
+#: models.py:169 models.py:258 models.py:292 models.py:313 models.py:327
+#: models.py:367
+msgid "Created datetime"
+msgstr "تاریخ و زمان ایجاد شده"
+
+#: models.py:170 models.py:259 models.py:293 models.py:314 models.py:328
+#: models.py:368
+msgid "Modified datetime"
+msgstr "تاریخ و زمان اصلاح شده"
+
+#: models.py:176 models.py:181 models.py:251 models.py:340 models.py:381
+msgid "Product"
+msgstr "محصول"
+
+#: models.py:177
+msgid "Products"
+msgstr "محصولات"
+
+#: models.py:183
+msgid ""
+"File extension not allowed. Allowed extensions include  .jpg, .jpeg .png"
+msgstr "سوند فایل مجاز نیست پسوندهای مجاز شامل png, .jpeg, .jpg."
+
+#: models.py:184
+msgid "Image"
+msgstr "عکس"
+
+#: models.py:185
+msgid "Name"
+msgstr "نام"
+
+#: models.py:192
+#| msgid "This field is required"
+msgid "This field is required."
+msgstr "این فیلد اجباری است."
+
+#: models.py:203
+#| msgid "This image for product is duplicated"
+msgid "This image for product is duplicated."
+msgstr "این تصویر برای محصول تکراری است."
+
+#: models.py:205
+#| msgid "This image has already been uploaded"
+msgid "This image has already been uploaded."
+msgstr "این تصویر قبلا آپلود شده است."
+
+#: models.py:216
+msgid "Product image"
+msgstr "عکس محصول"
+
+#: models.py:217
+msgid "Product images"
+msgstr "عکس های محصول"
+
+#: models.py:226
+msgid "Approved"
+msgstr "تایید شده"
+
+#: models.py:227
+msgid "Not approved"
+msgstr "تایید نشده"
+
+#: models.py:236
+msgid "Very bad"
+msgstr "خیلی بد"
+
+#: models.py:237
+msgid "Bad"
+msgstr "بد"
+
+#: models.py:238
+msgid "Normal"
+msgstr "معمولی"
+
+#: models.py:239
+msgid "Good"
+msgstr "خوب"
+
+#: models.py:240
+msgid "Excellent"
+msgstr "عالی"
+
+#: models.py:253
+msgid "Body"
+msgstr "بدنه"
+
+#: models.py:255
+msgid "Reply to"
+msgstr "پاسخ به"
+
+#: models.py:256
+msgid "Rating"
+msgstr "امتیاز دادن"
+
+#: models.py:266
+#| msgid "A comment that is a reply cannot be rating"
+msgid "A comment that is a reply cannot be rating."
+msgstr "نظری که یک پاسخ است نمی تواند امتیاز دهی شود."
+
+#: models.py:268
+#| msgid "A comment that isn't a reply should be rating"
+msgid "A comment that isn't a reply should be rating."
+msgstr "نظری که پاسخ نیست باید امتیاز دهی شود."
+
+#: models.py:278 models.py:290 models.py:311
+msgid "Comment"
+msgstr "نظر"
+
+#: models.py:279
+msgid "Comments"
+msgstr "نظرات"
+
+#: models.py:299
+msgid "Comment like"
+msgstr "موافق نظر"
+
+#: models.py:300
+msgid "Comment likes"
+msgstr "موافقان نظر"
+
+#: models.py:320
+msgid "Comment dislike"
+msgstr "مخالف نظر"
+
+#: models.py:321
+msgid "Comment dislikes"
+msgstr "مخالفان نظر"
+
+#: models.py:325
+msgid "ID"
+msgstr "شناسه"
+
+#: models.py:334 models.py:339
+msgid "Cart"
+msgstr "سبد خرید"
+
+#: models.py:335
+msgid "Carts"
+msgstr "سبدهای خرید"
+
+#: models.py:341 models.py:382
+msgid "Quantity"
+msgstr "تعداد"
+
+#: models.py:350
+msgid "Cart item"
+msgstr "کالای سبد خرید"
+
+#: models.py:351
+msgid "Cart items"
+msgstr "کالاهای سبد خرید"
+
+#: models.py:359
+msgid "Paid"
+msgstr "پرداخت شده"
+
+#: models.py:360
+msgid "Canceled"
+msgstr "لغو شده"
+
+#: models.py:361
+msgid "Unpaid"
+msgstr "پرداخت نشده"
+
+#: models.py:375 models.py:380
+msgid "Order"
+msgstr "سفارش"
+
+#: models.py:376
+msgid "Orders"
+msgstr "سفارشات"
+
+#: models.py:391
+msgid "Order item"
+msgstr "کالای سفارش"
+
+#: models.py:392
+msgid "Order items"
+msgstr "کالاهای سفارش"
+
+#: permissions.py:18
+#| msgid "Your request is under review"
+msgid "Your request is under review."
+msgstr "درخواست شما در حال بررسی است."
+
+#: permissions.py:20
+#| msgid "You are currently a seller"
+msgid "You are currently a seller."
+msgstr "در حال حاضر فروشنده هستید."
+
+#: serializers.py:90 serializers.py:155
+msgid "CV file size should be less than or equal to 5 megabytes"
+msgstr "حجم فایل رزومه باید حداکثر ۵ مگابایت باشد"
+
+#: serializers.py:101 serializers.py:171 serializers.py:208
+msgid "Please choose your gender"
+msgstr "لطفا جنسیت خود را انتخاب کنید"
+
+#: serializers.py:109
+#| msgid "CV file size should be less than or equal to 5 megabytes"
+msgid "CV file size should be less than or equal to 5 megabytes."
+msgstr "حجم فایل رزومه باید حداکثر ۵ مگابایت باشد."
+
+#: serializers.py:242
+msgid ""
+"A category may not be made a sub_category of any of its descendants or "
+"itself"
+msgstr ""
+"یک دسته بندی را نمی توان به عنوان یک زیر دسته بندی از نوادگانش یا خودش قرار "
+"داد"
+
+#: serializers.py:329
+#, python-format
+#| msgid ""
+#| "There isn't comment with id=%(reply_to_id)d in the %(product_title)s product"
+msgid ""
+"There isn't comment with id=%(reply_to_id)d in the %(product_title)s "
+"product."
+msgstr "نظری با شناسه %(reply_to_id)d در محصول %(product_title)s وجود ندارد."
+
+#: serializers.py:449
+msgid "Image ids"
+msgstr "شناسه عکس ها"
+
+#: serializers.py:461
+#, python-format
+#| msgid "There isn't any product image with id=%(image_id)s"
+msgid "There isn't any product image with id=%(image_id)s."
+msgstr "عکس محصولی با شناسه %(image_id)s وجود ندارد."
+
+#: serializers.py:464
+#| msgid "There is one or more images that belong to another products"
+msgid "There is one or more images that belong to another products."
+msgstr "یک یا چند عکس وجود دارد که متعلق به محصولات دیگر است."
+
+#: serializers.py:470
+msgid "This field may not be null"
+msgstr "این فیلد نمیتواند هیچ مقدار باشد"
+
+#: validators.py:8
+#| msgid ""
+#| "Enter a valid postal code, Postal code must be 10 digits without dashes"
+msgid ""
+"Enter a valid postal code, Postal code must be 10 digits without dashes."
+msgstr "یک کد پستی معتبر وارد کنید، کد پستی باید 10 رقمی و بدون خط تیره باشد."
+
+#: validators.py:16
+#| msgid ""
+#| "Enter a valid national code, National code must be 10 digits which start "
+#| "with one of the numbers between 1 and 9"
+msgid ""
+"Enter a valid national code, National code must be 10 digits which start "
+"with one of the numbers between 1 and 9."
+msgstr ""
+"یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1"
+" تا 9 شروع می شود."
+
+#: views.py:109
+#| msgid "Your request has been successfully registered"
+msgid "Your request has been successfully registered."
+msgstr "درخواست شما با موفقیت ثبت شد."
+
+#: views.py:137
+#| msgid ""
+#| "There is some products relating this seller, Please remove them first"
+msgid "There is some products relating this seller, Please remove them first."
+msgstr ""
+"برخی از محصولات مربوط به این فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
+
+#: views.py:160
+#| msgid ""
+#| "There is some products relating to you, Please remove them first"
+msgid "There is some products relating to you, Please remove them first."
+msgstr "برخی از محصولات مربوط به شما هستند، لطفاً ابتدا آنها را حذف کنید."
+
+#: views.py:247
+#| msgid ""
+#| "There is some products relating this category, Please remove them first"
+msgid ""
+"There is some products relating this category, Please remove them first."
+msgstr ""
+"برخی از محصولات مربوط به این دسته بندی هستند، لطفاً ابتدا آنها را حذف کنید."
+
+#: views.py:302
+#| msgid ""
+#| "There is some order items relating this product, Please remove them first"
+msgid ""
+"There is some order items relating this product, Please remove them first."
+msgstr ""
+"برخی از کالاهای سفارش مربوط به این محصول هستند، لطفاً ابتدا آنها را حذف "
+"کنید."
+
+#: views.py:427 views.py:468
+#, python-format
+#| msgid ""
+#| "There isn't comment with id=%(comment_id)d in the %(product_title)s product"
+msgid ""
+"There isn't comment with id=%(comment_id)d in the %(product_title)s product."
+msgstr "نظری با شناسه %(comment_id)d در محصول %(product_title)s وجود ندارد."
+
+#: views.py:430
+#| msgid "A comment that is a reply cannot be liked"
+msgid "A comment that is a reply cannot be liked."
+msgstr "نظری که یک پاسخ است نمی تواند موافقت شود."
+
+#: views.py:446
+#| msgid "The comment like was removed"
+msgid "The comment like was removed."
+msgstr "موافقت نظر حذف شد."
+
+#: views.py:450
+#| msgid "The comment was successfully liked"
+msgid "The comment was successfully liked."
+msgstr "نظر با موفقیت موافقت شد."
+
+#: views.py:471
+#| msgid "A comment that is a reply cannot be disliked"
+msgid "A comment that is a reply cannot be disliked."
+msgstr "نظری که یک پاسخ است نمی تواند مخالفت شود."
+
+#: views.py:487
+#| msgid "The comment dislike was removed"
+msgid "The comment dislike was removed."
+msgstr "مخالفت نظر حذف شد."
+
+#: views.py:491
+#| msgid "The comment was successfully disliked"
+msgid "The comment was successfully disliked."
+msgstr "نظر با موفقیت مخالفت شد."

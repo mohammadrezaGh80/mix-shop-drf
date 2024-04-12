@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, PasswordField
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext as _
@@ -29,7 +29,7 @@ class OTPSerializer(serializers.ModelSerializer):
 
 
 class VerifyOTPSerializer(serializers.ModelSerializer):
-    request_id = serializers.UUIDField(source='id')
+    request_id = serializers.UUIDField(source='id', label=_('Request id'))
 
     class Meta:
         model = OTP
@@ -38,6 +38,12 @@ class VerifyOTPSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'username'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields[self.username_field] = serializers.CharField(write_only=True, label=_('Username'))
+        self.fields['password'] = PasswordField(label=_('Password'))
 
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -53,7 +59,8 @@ class SetPasswordSerializer(serializers.ModelSerializer):
         max_length=128,
         write_only=True,
         required=True,
-        style={'input_type': 'password'}
+        style={'input_type': 'password'},
+        label=_('Password')
     )
 
     class Meta:

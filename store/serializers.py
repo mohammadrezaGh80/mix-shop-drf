@@ -1,12 +1,10 @@
-from django.http import Http404
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django.core.validators import FileExtensionValidator
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
-from django.db.models import Count
 
 from datetime import date
 from types import NoneType
@@ -89,7 +87,7 @@ class RequestSellerSerializer(serializers.ModelSerializer):
     birth_date = serializers.DateField()
     gender = serializers.ChoiceField(choices=Person.PERSON_GENDER)
     cv = serializers.FileField(validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
-                               help_text=_('CV file size should be less than or equal to 5 megabytes.'))
+                               help_text=_('CV file size should be less than or equal to 5 megabytes'))
     
     class Meta:
         model = Seller
@@ -100,7 +98,7 @@ class RequestSellerSerializer(serializers.ModelSerializer):
     def validate_gender(self, gender):
         if gender not in [Seller.PERSON_GENDER_MALE, Seller.PERSON_GENDER_FEMALE]:
             raise serializers.ValidationError(
-                _("Please choose your gender.")
+                _("Please choose your gender")
             )
         return gender
     
@@ -148,13 +146,14 @@ class SellerSerializer(serializers.ModelSerializer):
     
 
 class SellerCreateSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(max_length=255)
-    last_name = serializers.CharField(max_length=255)
-    birth_date = serializers.DateField()
-    profile_image = serializers.ImageField()
-    gender = serializers.ChoiceField(choices=Person.PERSON_GENDER)
+    first_name = serializers.CharField(max_length=255, label=_('First name'))
+    last_name = serializers.CharField(max_length=255, label=_('Last name'))
+    birth_date = serializers.DateField(label=_('Birth date'))
+    profile_image = serializers.ImageField(label=_('Profile image'))
+    gender = serializers.ChoiceField(choices=Person.PERSON_GENDER, label=_('Gender'))
     cv = serializers.FileField(validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
-                               help_text=_('CV file size should be less than or equal to 5 megabytes.'))
+                               help_text=_('CV file size should be less than or equal to 5 megabytes'),
+                               label=_('CV'))
 
     class Meta:
         model = Seller
@@ -169,17 +168,17 @@ class SellerCreateSerializer(serializers.ModelSerializer):
     def validate_gender(self, gender):
         if gender not in [Seller.PERSON_GENDER_MALE, Seller.PERSON_GENDER_FEMALE]:
             raise serializers.ValidationError(
-                _("Please choose your gender.")
+                _("Please choose your gender")
             )
         return gender
     
 
 class SellerDetailSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(max_length=255)
-    last_name = serializers.CharField(max_length=255)
-    profile_image = serializers.ImageField()
-    birth_date = serializers.DateField()
-    gender = serializers.ChoiceField(choices=Person.PERSON_GENDER)
+    first_name = serializers.CharField(max_length=255, label=_('First name'))
+    last_name = serializers.CharField(max_length=255, label=_('Last name'))
+    profile_image = serializers.ImageField(label=_('Profile image'))
+    birth_date = serializers.DateField(label=_('Birth date'))
+    gender = serializers.ChoiceField(choices=Person.PERSON_GENDER, label=_('Gender'))
     age = serializers.SerializerMethodField()
     addresses = AddressSellerSerializer(many=True, read_only=True)
     products_count = serializers.SerializerMethodField()
@@ -206,7 +205,7 @@ class SellerDetailSerializer(serializers.ModelSerializer):
     def validate_gender(self, gender):
         if gender not in [Seller.PERSON_GENDER_MALE, Seller.PERSON_GENDER_FEMALE]:
             raise serializers.ValidationError(
-                _("Please choose your gender.")
+                _("Please choose your gender")
             )
         return gender
 
@@ -240,7 +239,7 @@ class CategorySerializer(serializers.ModelSerializer):
         try:
             return super().update(instance, validated_data)
         except InvalidMove:
-            raise serializers.ValidationError({'detail': _('A category may not be made a sub_category of any of its descendants or itself.')})
+            raise serializers.ValidationError({'detail': _('A category may not be made a sub_category of any of its descendants or itself')})
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -447,7 +446,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 class ProductCreateSerializer(serializers.ModelSerializer):
     slug = serializers.SlugField(read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
-    image_ids = serializers.ListField(child=serializers.IntegerField(), required=False, write_only=True)
+    image_ids = serializers.ListField(child=serializers.IntegerField(), required=False, write_only=True, label=_('Image ids'))
 
     class Meta:
         model = Product
@@ -459,16 +458,16 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             try:
                 product_image = ProductImage.objects.get(pk=image_id)
             except ProductImage.DoesNotExist:
-                raise serializers.ValidationError(_(f"There isn't any product image with id={image_id}."))
+                raise serializers.ValidationError(_("There isn't any product image with id=%(image_id)s.") % {"image_id": image_id})
             else:
                 if product_image.product:
-                    raise serializers.ValidationError(_(f"There is one or more images that belong to another products."))
+                    raise serializers.ValidationError(_("There is one or more images that belong to another products."))
         
         return image_ids
     
     def validate_specifications(self, specifications):
         if isinstance(specifications, NoneType):
-            raise serializers.ValidationError(_("This field may not be null."))
+            raise serializers.ValidationError(_("This field may not be null"))
         return specifications
 
     def create(self, validated_data):

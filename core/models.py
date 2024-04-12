@@ -18,7 +18,7 @@ class CustomUserManager(BaseUserManager):
         Creates and saves a User with the given phone, email and password.
         """
         if not phone:
-            raise ValueError(_('Users must have an phone number.'))
+            raise ValueError(_('Users must have a phone number.'))
         
         if email:
             email = self.normalize_email(email)

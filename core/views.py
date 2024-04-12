@@ -90,7 +90,7 @@ class VerifyOTPGenericAPIView(generics.GenericAPIView):
                     }, status=status.HTTP_200_OK)
             
             except OTP.DoesNotExist:
-                return Response({'detail': 'Your one-time password is incorrect or has expired!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'detail': _('Your one-time password is incorrect or has expired!')}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -106,7 +106,7 @@ class SetPasswordGenericAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'detail': 'Your password has been changed.'}, status=status.HTTP_200_OK)
+        return Response({'detail': _('Your password has been successfully changed.')}, status=status.HTTP_200_OK)
 
 
 class UserViewSet(ModelViewSet):

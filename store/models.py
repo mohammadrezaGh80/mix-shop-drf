@@ -35,7 +35,7 @@ class Address(models.Model):
         super().clean()
 
         if not self.content_object:
-            raise ValidationError(_(f"There isn't any {self.content_type.model_class().__name__} with id={self.object_id}."))
+            raise ValidationError(_("There isn't any %(user_type)s with id=%(object_id)d.") % {'user_type': _(self.content_type.model_class().__name__), 'object_id': self.object_id})
 
     def __str__(self):
         return f"{self.province}(City: {self.city}): {self.postal_code}"
@@ -200,9 +200,9 @@ class ProductImage(models.Model):
                 diff = ImageChops.difference(current_image,image)
                 if not diff.getbbox():
                     if getattr(self.product, 'id', False):
-                        raise ValidationError(_("This image for product is duplicated"))
+                        raise ValidationError(_("This image for product is duplicated."))
                     else:
-                        raise ValidationError(_("This image has already been uploaded"))
+                        raise ValidationError(_("This image has already been uploaded."))
         
     def save(self, *args, **kwargs):
         if not self.name:
@@ -262,6 +262,9 @@ class Comment(MPTTModel):
     def clean(self):
         super().clean()
 
+        if not self.content_object:
+            raise ValidationError(_("There isn't any %(user_type)s with id=%(object_id)d.") % {'user_type': _(self.content_type.model_class().__name__), 'object_id': self.object_id})
+
         if self.reply_to and self.rating:
             raise ValidationError(_("A comment that is a reply cannot be rating."))
         elif not self.rating and not self.reply_to:
@@ -292,6 +295,12 @@ class CommentLike(models.Model):
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
+    def clean(self):
+        super().clean()
+
+        if not self.content_object:
+            raise ValidationError(_("There isn't any %(user_type)s with id=%(object_id)d.") % {'user_type': _(self.content_type.model_class().__name__), 'object_id': self.object_id})
+
     def __str__(self):
         return f"{self.content_object} likes {self.comment}"
 
@@ -312,6 +321,12 @@ class CommentDislike(models.Model):
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
+
+    def clean(self):
+        super().clean()
+
+        if not self.content_object:
+            raise ValidationError(_("There isn't any %(user_type)s with id=%(object_id)d.") % {'user_type': _(self.content_type.model_class().__name__), 'object_id': self.object_id})
 
     def __str__(self):
         return f"{self.content_object} dislikes {self.comment}"
