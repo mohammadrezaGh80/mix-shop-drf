@@ -19,12 +19,16 @@ customers_router.register('addresses', views.AddressCustomerViewSet, basename='c
 
 sellers_router = routers.NestedDefaultRouter(router, 'sellers', lookup='seller')
 sellers_router.register('addresses', views.AddressSellerViewSet, basename='seller-addresses')
+sellers_router.register('products', views.SellerMeProductViewSet, basename='seller-products')
+
+seller_products_router = routers.NestedDefaultRouter(sellers_router, 'products', lookup='product')
+seller_products_router.register('images', views.ProductImageViewSet, basename='seller-product-images')
 
 products_router = routers.NestedDefaultRouter(router, 'products', lookup='product')
 products_router.register('comments', views.CommentViewSet, basename='product-comments')
 products_router.register('images', views.ProductImageViewSet, basename='product-images')
 
-urlpatterns = router.urls + customers_router.urls + sellers_router.urls + products_router.urls + [
+urlpatterns = router.urls + customers_router.urls + sellers_router.urls + products_router.urls + seller_products_router.urls + [
     path('request-seller/', views.RequestSellerGenericAPIView.as_view(), name='seller-request'),
     path('products/<int:product_pk>/comments/<int:comment_pk>/like/', views.CommentLikeAPIView.as_view(), name='comment-like'),
     path('products/<int:product_pk>/comments/<int:comment_pk>/dislike/', views.CommentDisLikeAPIView.as_view(), name='comment-dislike')

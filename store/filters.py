@@ -85,12 +85,11 @@ class SellerFilter(CustomerFilter):
         fields = []
 
 
-class ProductFilter(django_filters.FilterSet):
+class SellerMeProductFilter(django_filters.FilterSet):
     price_min = django_filters.NumberFilter(field_name='price', lookup_expr='gte', label='price_min')
     price_max = django_filters.NumberFilter(field_name='price', lookup_expr='lte', label='price_max')
     has_inventory = django_filters.BooleanFilter(field_name='inventory', method='filter_has_inventory', label='has_inventory')
     category = django_filters.NumberFilter(field_name='category', method='filter_category', label='category')
-    seller = django_filters.NumberFilter(field_name='seller', lookup_expr='exact', label='seller')
 
     def filter_has_inventory(self, queryset, field_name, value):
         filter_condition = {}
@@ -110,3 +109,7 @@ class ProductFilter(django_filters.FilterSet):
     class Meta:
         model = Product
         fields = []
+
+
+class ProductFilter(SellerMeProductFilter):
+    seller = django_filters.NumberFilter(field_name='seller', lookup_expr='exact', label='seller')

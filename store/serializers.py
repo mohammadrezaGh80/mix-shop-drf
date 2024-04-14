@@ -507,6 +507,63 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class ProductUpdateSerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title', 'slug', 'category', 'images',
+                  'price', 'inventory', 'description', 'specifications']
+    
+    def validate_specifications(self, specifications):
+        if isinstance(specifications, NoneType):
+            raise serializers.ValidationError(_("This field may not be null"))
+        return specifications
+        
+    def update(self, instance, validated_data):
+        title = validated_data.get('title')
+        if title:
+            instance.slug = slugify(title)
+            instance.save(update_fields=['slug'])
+
+        return super().update(instance, validated_data)
+
+
+class SellerMeProductSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    status = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title','slug' ,'category', 'thumbnail' ,'price', 'viewer', 'status']
+
+    def get_status(self, product):
+        return 'Available' if product.inventory > 0 else 'Unavailable'
+    
+    def get_thumbnail(self, product):
+        if not product.product_images:
+            return None
+        
+        product = product.product_images[0]
+        serializer = ProductImageSerializer(product, context=self.context)
+        return serializer.data
+
+
+class SellerMeProductDetailSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    status = serializers.SerializerMethodField()
+    images = ProductImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title','slug' ,'category', 'images' ,'price', 'status', 'inventory', 'description', 'viewer', 'specifications']
+
+    def get_status(self, product):
+        return 'Available' if product.inventory > 0 else 'Unavailable'
+
+
 class CommentListWaitingSerializer(serializers.ModelSerializer):
     user = CommentObjectRelatedField(source='content_object', read_only=True)
     user_type = serializers.SerializerMethodField()

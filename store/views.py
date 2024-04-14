@@ -15,8 +15,8 @@ from functools import cached_property
 from . import serializers
 from .models import Category, Comment, CommentLike, CommentDislike, Customer, Address, Product, ProductImage, Seller
 from .paginations import CustomLimitOffsetPagination
-from .filters import CustomerFilter, SellerFilter, ProductFilter
-from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, ProductImagePermission
+from .filters import CustomerFilter, SellerFilter, ProductFilter, SellerMeProductFilter
+from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission
 from .ordering import ProductOrderingFilter
 
 
@@ -200,6 +200,37 @@ class AddressSellerViewSet(ModelViewSet):
         return {'seller_pk': self.seller.pk}
     
 
+class SellerMeProductViewSet(ModelViewSet):
+    permission_classes = [IsSellerMe]
+    pagination_class = CustomLimitOffsetPagination
+    filter_backends = [DjangoFilterBackend, ProductOrderingFilter]
+    filterset_class = SellerMeProductFilter
+    ordering_fields = ['price', 'inventory', 'created_datetime', 'viewer']
+
+    def get_queryset(self):
+        seller = self.request.user.seller
+
+        queryset = Product.objects.filter(seller=seller).select_related('category').order_by('-created_datetime')
+
+        if self.action == 'list':
+            return queryset.prefetch_related(
+                Prefetch('images', to_attr="product_images")
+            )
+        elif self.action == 'retrieve':
+            return queryset.prefetch_related('images')
+
+        return queryset
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.SellerMeProductSerializer
+        elif self.action == 'retrieve':
+            return serializers.SellerMeProductDetailSerializer
+        elif self.action == 'create':
+            return serializers.ProductCreateSerializer
+        return serializers.ProductUpdateSerializer
+
+
 class SellerListRequestsViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'patch']
     queryset = Seller.objects.filter(status=Seller.SELLER_STATUS_WAITING)
@@ -277,9 +308,11 @@ class ProductViewSet(ModelViewSet):
             return serializers.ProductSerializer
         elif self.action == 'retrieve':
             return serializers.ProductDetailSerializer
+        elif self.action == 'create':
+            return serializers.ProductCreateSerializer
         elif self.action == 'upload_image':
             return serializers.ProductImageSerializer
-        return serializers.ProductCreateSerializer
+        return serializers.ProductUpdateSerializer
     
     def get_permissions(self):
         if self.action == 'create':
@@ -306,7 +339,7 @@ class ProductViewSet(ModelViewSet):
     
     @action(detail=False, url_path='upload-image', methods=['POST'], permission_classes=[IsAdminUserOrSeller])
     def upload_image(self, request, *args, **kwargs):
-        serializer = serializers.ProductImageSerializer(data=request.data, context={'request': request})
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -316,29 +349,6 @@ class CommentViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'post', 'delete', 'patch']
     pagination_class = CustomLimitOffsetPagination
 
-    def get_queryset(self):
-        product_pk = self.kwargs.get('product_pk')
-
-        if self.action == 'list':
-            try:
-                queryset = Comment.objects.filter(
-                    product_id=product_pk,
-                    reply_to__isnull=True,
-                    status=Comment.COMMENT_STATUS_APPROVED)
-            except ValueError:
-                raise Http404
-        else:
-            queryset = Comment.objects.filter(
-                    product_id=product_pk,
-                    status=Comment.COMMENT_STATUS_APPROVED)
-        
-        return queryset.select_related('content_type').prefetch_related('content_object').prefetch_related('likes').prefetch_related('dislikes').order_by('-created_datetime')
-    
-    def get_serializer_class(self):
-        if self.action in ['retrieve', 'partial_update']:
-            return serializers.CommentDetailSerializer
-        return serializers.CommentSerializer
-    
     @cached_property
     def product(self):
         product_pk = self.kwargs.get('product_pk')
@@ -349,6 +359,26 @@ class CommentViewSet(ModelViewSet):
             raise Http404
         else:
             return product
+
+    def get_queryset(self):
+        product = self.product
+
+        if self.action == 'list':
+            queryset = Comment.objects.filter(
+                product=product,
+                reply_to__isnull=True,
+                status=Comment.COMMENT_STATUS_APPROVED)
+        else:
+            queryset = Comment.objects.filter(
+                    product=product,
+                    status=Comment.COMMENT_STATUS_APPROVED)
+        
+        return queryset.select_related('content_type').prefetch_related('content_object').prefetch_related('likes').prefetch_related('dislikes').order_by('-created_datetime')
+    
+    def get_serializer_class(self):
+        if self.action in ['retrieve', 'partial_update']:
+            return serializers.CommentDetailSerializer
+        return serializers.CommentSerializer
     
     def get_serializer_context(self):
         product = self.product
@@ -398,6 +428,7 @@ class CommentListWaitingViewSet(ModelViewSet):
 
 
 class ProductImageViewSet(ModelViewSet):
+    http_method_names = ['get', 'head', 'options', 'post', 'delete']
     serializer_class = serializers.ProductImageSerializer
     permission_classes = [ProductImagePermission]
 

@@ -31,6 +31,19 @@ class IsSeller(permissions.BasePermission):
         )
 
 
+class IsSellerMe(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if view.kwargs.get('seller_pk') != 'me':
+            raise Http404
+        
+        return bool(
+            request.user and request.user.is_authenticated and
+            getattr(request.user, 'seller', False) and 
+            request.user.seller.status == Seller.SELLER_STATUS_ACCEPTED
+        )
+
+
 class IsAdminUserOrReadOnly(permissions.BasePermission):
 
     def has_permission(self, request, view):

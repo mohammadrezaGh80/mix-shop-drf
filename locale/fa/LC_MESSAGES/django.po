@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Django REST framework\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-13 21:45+0200\n"
-"PO-Revision-Date: 2024-04-12 09:00+0330\n"
+"PO-Revision-Date: 2024-04-14 16:04+0330\n"
 "Last-Translator: Anonymous User <None>\n"
 "Language-Team: Persian (http://www.transifex.com/django-rest-framework-1/django-rest-framework/language/fa/)\n"
 "Language: fa\n"
@@ -75,7 +75,7 @@ msgstr "کاربر"
 
 #: authtoken/models.py:18
 msgid "Created"
-msgstr "ایجاد‌شد"
+msgstr "ایجاد‌ شده"
 
 #: authtoken/models.py:27 authtoken/serializers.py:19
 msgid "Token"
@@ -107,11 +107,11 @@ msgstr "خطای سمت سرور رخ داده است."
 
 #: exceptions.py:142
 msgid "Invalid input."
-msgstr ""
+msgstr "ورودی نامعتبر است."
 
 #: exceptions.py:161
 msgid "Malformed request."
-msgstr "درخواست ناقص."
+msgstr "درخواست ناقص است."
 
 #: exceptions.py:167
 msgid "Incorrect authentication credentials."
@@ -164,15 +164,15 @@ msgstr "این فیلد اجباری است."
 
 #: fields.py:317
 msgid "This field may not be null."
-msgstr "این مقدار نباید توهی باشد."
+msgstr "این مقدار نباید خالی باشد."
 
 #: fields.py:701
 msgid "Must be a valid boolean."
-msgstr ""
+msgstr "باید یک بولین معتبر باشد."
 
 #: fields.py:766
 msgid "Not a valid string."
-msgstr ""
+msgstr "یک رشته معتبر نیست."
 
 #: fields.py:767
 msgid "This field may not be blank."
@@ -190,7 +190,7 @@ msgstr "مطمئن شوید طول این مقدار حداقل {min_length} ا�
 
 #: fields.py:816
 msgid "Enter a valid email address."
-msgstr "پست الکترونیکی صحبح وارد کنید."
+msgstr "ایمیل صحبح وارد کنید."
 
 #: fields.py:827
 msgid "This value does not match the required pattern."
@@ -200,7 +200,7 @@ msgstr "مقدار وارد شده با الگو مطابقت ندارد."
 msgid ""
 "Enter a valid \"slug\" consisting of letters, numbers, underscores or "
 "hyphens."
-msgstr "یک \"slug\" معتبر شامل حروف، اعداد، آندرلاین یا خط فاصله وارد کنید"
+msgstr "یک \"slug\" معتبر شامل حروف، اعداد، آندرلاین یا خط فاصله وارد کنید."
 
 #: fields.py:839
 msgid ""
@@ -210,11 +210,11 @@ msgstr ""
 
 #: fields.py:854
 msgid "Enter a valid URL."
-msgstr "یک URL معتبر وارد کنید"
+msgstr "یک URL معتبر وارد کنید."
 
 #: fields.py:867
 msgid "Must be a valid UUID."
-msgstr ""
+msgstr "باید یک UUID معتبر باشد."
 
 #: fields.py:903
 msgid "Enter a valid IPv4 or IPv6 address."
@@ -251,7 +251,7 @@ msgstr "بیشتر از {max_digits} رقم نباید وجود داشته با�
 #, python-brace-format
 msgid ""
 "Ensure that there are no more than {max_decimal_places} decimal places."
-msgstr "بیشتر از {max_decimal_places} ممیز اعشار نباید وجود داشته باشد"
+msgstr "بیشتر از {max_decimal_places} ممیز اعشار نباید وجود داشته باشد."
 
 #: fields.py:1009
 #, python-brace-format
@@ -352,7 +352,7 @@ msgid ""
 "Upload a valid image. The file you uploaded was either not an image or a "
 "corrupted image."
 msgstr ""
-"یک عکس معتبر آپلود کنید. فایلی که ارسال کردید عکس یا عکس خراب شده نیست"
+"یک عکس معتبر آپلود کنید.فایلی که آپلود کردید یا عکس نبوده یا عکس خراب بوده."
 
 #: fields.py:1604 relations.py:486 serializers.py:571
 msgid "This list may not be empty."
