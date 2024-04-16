@@ -5,7 +5,6 @@ import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
 import store.validators
-import uuid
 
 
 class Migration(migrations.Migration):
@@ -21,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Cart',
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_datetime', models.DateTimeField(auto_now_add=True, verbose_name='Created datetime')),
                 ('modified_datetime', models.DateTimeField(auto_now=True, verbose_name='Modified datetime')),
             ],

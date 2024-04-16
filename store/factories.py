@@ -40,8 +40,9 @@ class CustomUserFactory(DjangoModelFactory):
             return int(user.phone[2:]) + 1
         except User.DoesNotExist:
             return 1
+   
     
-
+@factory.django.mute_signals(signals.post_save)
 class CustomerFactory(DjangoModelFactory):
     class Meta:
         model = models.Customer
@@ -120,8 +121,6 @@ class CommentFactory(DjangoModelFactory):
 class CartFactory(DjangoModelFactory):
     class Meta:
         model = models.Cart
-
-    id = factory.Faker('uuid4')
 
 
 class CartItemFactory(DjangoModelFactory):

@@ -28,7 +28,6 @@ NUM_CUSTOMERS = 40
 NUM_SELLERS = 10
 NUM_CATEGORIES = 50
 NUM_PRODUCTS = 1000
-NUM_CARTS = 100
 NUM_ORDERS = 30
 
 
@@ -52,12 +51,29 @@ class Command(BaseCommand):
 
         # customers data
         print(f"Adding {NUM_CUSTOMERS} customers...", end='')
-        all_customers = list([CustomerFactory() if random.random() > 0.3 else CustomerFactory(birth_date=None) for _ in range(NUM_CUSTOMERS)])
+        all_customers = []
+        all_carts = []
+
+        for _ in range(NUM_CUSTOMERS):
+            if random.random() > 0.3:
+                customer = CustomerFactory()
+            else:
+                customer = CustomerFactory(birth_date=None)
+
+            cart = CartFactory(customer=customer)
+            cart.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12), day=random.randint(1,28), tzinfo=timezone.utc)
+            cart.modified_datetime = cart.created_datetime + timedelta(hours=random.randint(1, 500))
+            cart.save()
+            
+            all_carts.append(cart)
+            all_customers.append(customer)
+
         print("DONE")
 
         # sellers data
         print(f"Adding {NUM_SELLERS} sellers...", end='')
         all_sellers = list()
+
         for _ in range(NUM_SELLERS):
             seller = SellerFactory() if random.random() > 0.3 else SellerFactory(birth_date=None)
             customer = CustomerFactory(
@@ -67,6 +83,14 @@ class Command(BaseCommand):
                 gender=seller.gender,
                 birth_date=seller.birth_date
             )
+
+            cart = CartFactory(customer=customer)
+            cart.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12), day=random.randint(1,28), tzinfo=timezone.utc)
+            cart.modified_datetime = cart.created_datetime + timedelta(hours=random.randint(1, 500))
+            cart.save()
+            
+            all_carts.append(cart)
+
             seller.status = Seller.SELLER_STATUS_ACCEPTED
             seller.save()
             
@@ -117,20 +141,9 @@ class Command(BaseCommand):
                 )
                 comment.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12),day=random.randint(1,28), tzinfo=timezone.utc)
                 comment.modified_datetime = comment.created_datetime + timedelta(hours=random.randint(1, 500))
+                comment.save()
                 all_comments.append(comment)
         Comment.objects.bulk_update(all_comments, fields=['created_datetime', 'modified_datetime'])
-        
-        print("DONE")
-
-        # carts data
-        print(f"Adding {NUM_CARTS} carts...", end='')
-        all_carts = list()
-        for _ in range(NUM_CARTS):
-            cart = CartFactory()
-            cart.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12), day=random.randint(1,28), tzinfo=timezone.utc)
-            cart.modified_datetime = cart.created_datetime + timedelta(hours=random.randint(1, 500))
-            cart.save()
-            all_carts.append(cart)
         
         print("DONE")
 

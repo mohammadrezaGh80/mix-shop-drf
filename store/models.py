@@ -8,7 +8,6 @@ from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.core.exceptions import ValidationError
 
 import os
-from uuid import uuid4
 from PIL import Image, ImageChops
 from mptt.models import TreeForeignKey, MPTTModel
 
@@ -337,13 +336,13 @@ class CommentDislike(models.Model):
 
 
 class Cart(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, verbose_name=_("ID"))
-    
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE, related_name='cart', verbose_name=_('Customer'))
+
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
     def __str__(self):
-        return f"{self.id}"
+        return f"{self.customer}({self.id})"
 
     class Meta:
         verbose_name = _("Cart")
@@ -399,7 +398,7 @@ class OrderItem(models.Model):
 
 
     def __str__(self):
-        return f"Orunique_togetherder item(id: {self.id}): {self.product} x {self.quantity}"
+        return f"Order item(id: {self.id}): {self.product} x {self.quantity}"
 
     class Meta:
         unique_together = [["order", "product"]]

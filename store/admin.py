@@ -268,9 +268,9 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['id', 'created_datetime']
-    readonly_fields = ['id']
+    list_display = ['id', 'customer', 'created_datetime']
     search_fields = ['id']
+    autocomplete_fields = ['customer']
     list_per_page = 15
 
 

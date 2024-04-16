@@ -13,6 +13,7 @@ router.register('list-requests', views.SellerListRequestsViewSet, basename='list
 router.register('categories', views.CategoryViewSet, basename='category')
 router.register('products', views.ProductViewSet, basename='product')
 router.register('list-waiting-comments', views.CommentListWaitingViewSet, basename='list-waiting-comments')
+router.register('carts', views.CartViewSet, basename='cart')
 
 customers_router = routers.NestedDefaultRouter(router, 'customers', lookup='customer')
 customers_router.register('addresses', views.AddressCustomerViewSet, basename='customer-addresses')

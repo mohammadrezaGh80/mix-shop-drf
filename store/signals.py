@@ -3,7 +3,7 @@ from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
 
 
-from .models import Customer, Seller
+from .models import Customer, Seller, Cart
 from core.signals import superuser_created, add_user_to_staff, remove_users_from_staff
 
 User = get_user_model()
@@ -135,3 +135,9 @@ def change_type_user_after_create_seller_for_comment_dislikes(sender, instance, 
 def remove_seller_when_status_change_to_rejected(sender, instance, created, **kwargs):
     if not created and instance.status == Seller.SELLER_STATUS_REJECTED:
         instance.delete()
+
+
+@receiver(post_save, sender=Customer)
+def create_cart_for_newly_created_customer(sender, instance, created, **kwrgs):
+    if created:
+        Cart.objects.create(customer=instance)

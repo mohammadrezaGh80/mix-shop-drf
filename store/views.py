@@ -13,7 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
 
 from . import serializers
-from .models import Category, Comment, CommentLike, CommentDislike, Customer, Address, Product, ProductImage, Seller
+from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Product, ProductImage, Seller
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, SellerFilter, ProductFilter, SellerMeProductFilter
 from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission
@@ -521,3 +521,39 @@ class CommentDisLikeAPIView(APIView):
 
         return Response({'detail': _('The comment was successfully disliked.')}, status=status.HTTP_201_CREATED)
 
+
+class CartViewSet(ModelViewSet):
+    http_method_names = ['get', 'head', 'options']
+    queryset = Cart.objects.select_related('customer__user')
+    permission_classes = [IsAdminUser]
+    pagination_class = CustomLimitOffsetPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.action == 'retrieve':
+            return queryset.prefetch_related(
+                Prefetch('items',
+                         queryset=CartItem.objects.select_related('product')
+                )
+            )
+        
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return serializers.CartDetailSerializer
+        return serializers.CartSerializer
+    
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def me(self, request, *args, **kwargs):
+        queryset = self.queryset.prefetch_related(
+                Prefetch('items',
+                         queryset=CartItem.objects.select_related('product')
+                )
+            )
+        customer = request.user.customer
+        cart = queryset.get(customer_id=customer.id)
+
+        serializer = serializers.CartDetailSerializer(cart)
+        return Response(serializer.data, status=status.HTTP_200_OK)

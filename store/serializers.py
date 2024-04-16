@@ -10,7 +10,7 @@ from datetime import date
 from types import NoneType
 from mptt.exceptions import InvalidMove
 
-from .models import Category, Comment, Customer, Address, Person, ProductImage, Seller, Product
+from .models import Cart, CartItem, Category, Comment, Customer, Address, Person, ProductImage, Seller, Product
 
 User = get_user_model()
 
@@ -587,3 +587,43 @@ class CommentChangeStatusSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['status'] = instance.get_status_display()
         return representation
+
+
+class CartProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title', 'price']
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    product = CartProductSerializer()
+    total_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'product', 'quantity', 'total_price']
+    
+    def get_total_price(self, cart_item):
+        return cart_item.product.price * cart_item.quantity
+
+
+class CartSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer()
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'customer']
+
+
+class CartDetailSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer()
+    items = CartItemSerializer(many=True)
+    total_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'customer', 'items', 'total_price']
+    
+    def get_total_price(self, cart):
+        return sum([cart_item.product.price * cart_item.quantity for cart_item in cart.items.all()])
