@@ -5,12 +5,14 @@ from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
 from django.core.management.base import CommandError
 from django.utils.text import capfirst
+from django.utils.translation import gettext as _
 
 import getpass
 import os
 import sys
 
 from ...validators import NationalCodeValidator
+from store.models import Seller
 
 
 class Command(BaseCommand):
@@ -24,14 +26,19 @@ class Command(BaseCommand):
         national_code_validator = NationalCodeValidator()
 
         while 'national_code' not in user_data.keys():
-            national_code = input("National code: ")
+            national_code = input("%(national_code)s: " % {"national_code": _("National code")})
             
             try:
                 national_code_validator(national_code)
             except exceptions.ValidationError as e:
                 self.stderr.write("Error: %s" % "; ".join(e.messages))
             else:
-                user_data['national_code'] = national_code
+                try:
+                    Seller.objects.get(national_code=national_code)
+                except Seller.DoesNotExist:
+                    user_data['national_code'] = national_code
+                else:
+                    self.stderr.write("Error: That %(national_code)s is already taken." % {"national_code": _("National code")})
 
         try:
             self.UserModel._meta.get_field(PASSWORD_FIELD)

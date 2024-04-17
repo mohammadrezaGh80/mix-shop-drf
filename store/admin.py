@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django.db.models import Count
 from django.urls import reverse
 from django.utils.http import urlencode
@@ -268,10 +268,14 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['id', 'customer', 'created_datetime']
+    list_display = ['id', 'customer', 'get_phone', 'created_datetime']
     search_fields = ['id']
     autocomplete_fields = ['customer']
     list_per_page = 15
+
+    @admin.display(description=_('phone'))
+    def get_phone(self, cart):
+        return cart.customer.user.phone
 
 
 @admin.register(CartItem)

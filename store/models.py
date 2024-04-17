@@ -342,7 +342,7 @@ class Cart(models.Model):
     modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
 
     def __str__(self):
-        return f"{self.customer}({self.id})"
+        return f"{self.customer}({self.customer.user.phone})"
 
     class Meta:
         verbose_name = _("Cart")

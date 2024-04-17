@@ -56,7 +56,7 @@ class CustomUserAdmin(BaseUserAdmin):
     list_per_page = 15
 
 
-    @admin.action(description='Active users accounts')
+    @admin.action(description=_('Active users accounts'))
     def active_users_accounts(self, request, queryset):
         update_count = queryset.update(is_active=True)
         self.message_user(
@@ -65,7 +65,7 @@ class CustomUserAdmin(BaseUserAdmin):
             messages.SUCCESS
         )
 
-    @admin.action(description='Add user to staff')
+    @admin.action(description=_('Add user to staff'))
     def add_user_to_staff(self, request, queryset):
         if queryset.count() != 1:
             self.message_user(request, 
@@ -91,7 +91,7 @@ class CustomUserAdmin(BaseUserAdmin):
                           _('User(phone number: %(phone_number)s) have been successfully admin.') % {'phone_number': user.phone},
                           messages.SUCCESS)
 
-    @admin.action(description='Remove users from staff')
+    @admin.action(description=_('Remove users from staff'))
     def remove_users_from_staff(self, request, queryset):
         queryset = queryset.filter(is_staff=True)
         remove_users_from_staff.send_robust(self.__class__, queryset=queryset)

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-12 08:49+0330\n"
-"PO-Revision-Date: 2024-04-12 08:50+0330\n"
+"POT-Creation-Date: 2024-04-17 09:33+0330\n"
+"PO-Revision-Date: 2024-04-17 09:40+0330\n"
 "Last-Translator: Anonymous User <None>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -35,22 +35,25 @@ msgstr "اطلاعات شخصی"
 msgid "Permissions"
 msgstr "مجوز ها"
 
+#: admin.py:59
+msgid "Active users accounts"
+msgstr "فعال کردن حساب های کاربران"
+
 #: admin.py:64
 #, python-format
-#| msgid "%(update_count)d accounts of users activated"
 msgid "%(update_count)d accounts of users activated."
 msgstr " حساب کاربری %(update_count)d نفر از کاربران فعال شد."
 
+#: admin.py:68
+msgid "Add user to staff"
+msgstr "اضافه کردن کاربر به کارکنان"
+
 #: admin.py:72
-#| msgid "You cannot administer two or more users at the same time"
 msgid "You cannot administer two or more users at the same time."
 msgstr "دو یا چند کاربر را نمی توانید به صورت همزمان ادمین کنید."
 
 #: admin.py:79
 #, python-format
-#| msgid ""
-#| "User(phone number: %(phone_number)s) does not have a password, please enter "
-#| "a password for the user"
 msgid ""
 "User(phone number: %(phone_number)s) does not have a password, please enter "
 "a password for the user."
@@ -60,29 +63,32 @@ msgstr ""
 
 #: admin.py:91
 #, python-format
-#| msgid ""
-#| "User(phone number: %(phone_number)s) have been successfully admin"
 msgid "User(phone number: %(phone_number)s) have been successfully admin."
 msgstr "کاربر(شماره تلفن:  %(phone_number)s) با موفقیت ادمین شد."
 
+#: admin.py:94
+msgid "Remove users from staff"
+msgstr "حذف کاربران از کارکنان"
+
 #: admin.py:101
 #, python-format
-#| msgid "%(update_count)d users have been removed from the admin"
 msgid "%(update_count)d users have been removed from the admin."
 msgstr "%(update_count)d نفر از کاربران از ادمینی کنار گذاشته شدند."
 
 #: backends.py:19
-#| msgid "Your account is not active"
 msgid "Your account is not active."
 msgstr "حساب کاربری شما غیرفعال است."
 
 #: backends.py:23
-#| msgid "There isn't any user with entered username and password"
 msgid "There isn't any user with entered username and password."
 msgstr "کاربری با نام کاربری و رمزعبور وارد شده وجود ندارد."
 
+#: management/commands/createsuperuser_custom.py:29
+#: management/commands/createsuperuser_custom.py:41
+msgid "National code"
+msgstr "کد ملی"
+
 #: models.py:21
-#| msgid "Users must have a phone number"
 msgid "Users must have a phone number."
 msgstr "کاربران باید شماره تلفن داشته باشند."
 
@@ -99,9 +105,6 @@ msgid "Is active"
 msgstr ""
 
 #: models.py:66
-#| msgid ""
-#| "Designates whether this user should be treated as active. Unselect this "
-#| "instead of deleting accounts"
 msgid ""
 "Designates whether this user should be treated as active. Unselect this "
 "instead of deleting accounts."
@@ -114,7 +117,6 @@ msgid "Is staff"
 msgstr ""
 
 #: models.py:72
-#| msgid "Designates whether the user can log into this admin site"
 msgid "Designates whether the user can log into this admin site."
 msgstr "مشخص می کند که آیا کاربر می تواند به این سایت مدیریت وارد شود یا خیر."
 
@@ -151,19 +153,14 @@ msgid "One time passwords"
 msgstr "رمزعبور های یکبار مصرف"
 
 #: serializers.py:45
-#| msgid "User"
 msgid "Username"
 msgstr "کاربر"
 
 #: serializers.py:99
-#| msgid "This email is already chosen, please enter another email"
 msgid "This email is already chosen, please enter another email."
 msgstr "این ایمیل قبلاً انتخاب شده است، لطفاً ایمیل دیگری وارد کنید."
 
 #: validators.py:8
-#| msgid ""
-#| "Enter a valid phone number, phone number must have 11 digits which starts "
-#| "with the number 09"
 msgid ""
 "Enter a valid phone number, phone number must have 11 digits which starts "
 "with the number 09."
@@ -172,9 +169,6 @@ msgstr ""
 " 09 شروع می شود."
 
 #: validators.py:16
-#| msgid ""
-#| "Enter a valid national code, National code must be 10 digits which start "
-#| "with one of the numbers between 1 and 9"
 msgid ""
 "Enter a valid national code, National code must be 10 digits which start "
 "with one of the numbers between 1 and 9."
@@ -183,25 +177,26 @@ msgstr ""
 " تا 9 شروع می شود."
 
 #: views.py:93
-#| msgid "Your one-time password is incorrect or has expired"
 msgid "Your one-time password is incorrect or has expired!"
 msgstr "رمزعبور یکبار مصرف شما نادرست یا منقضی شده است!"
 
 #: views.py:109
-#| msgid "Your password has been successfully changed"
 msgid "Your password has been successfully changed."
 msgstr "رمزعبور شما با موفقیت تغییر یافت."
 
 #: views.py:127
-#| msgid ""
-#| "There is some products relating this seller, Please remove them first"
 msgid "There is some products relating this seller, Please remove them first."
 msgstr ""
 "برخی از محصولات مربوط به این فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
 
 #: views.py:130
-#| msgid ""
-#| "There is some orders relating this customer, Please remove them first"
 msgid "There is some orders relating this customer, Please remove them first."
 msgstr ""
 "برخی از سفارشات مربوط به این مشتری هستند، لطفاً ابتدا آنها را حذف کنید."
+
+#~ msgid "National code: "
+#~ msgstr "کد ملی:"
+
+#, python-format
+#~ msgid "Error: That %(national_code)s is already taken."
+#~ msgstr "ارور: %(national_code)s قبلا گرفته شده است."
