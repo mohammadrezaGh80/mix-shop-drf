@@ -589,7 +589,7 @@ class CommentChangeStatusSerializer(serializers.ModelSerializer):
         return representation
 
 
-class CartProductSerializer(serializers.ModelSerializer):
+class CartItemProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
@@ -597,7 +597,7 @@ class CartProductSerializer(serializers.ModelSerializer):
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product = CartProductSerializer()
+    product = CartItemProductSerializer()
     total_price = serializers.SerializerMethodField()
 
     class Meta:
@@ -606,6 +606,66 @@ class CartItemSerializer(serializers.ModelSerializer):
     
     def get_total_price(self, cart_item):
         return cart_item.product.price * cart_item.quantity
+
+
+class CartItemCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'product', 'quantity']
+    
+    def validate_product(self, product):
+        cart_pk = self.context.get('cart_pk')
+
+        try:
+            CartItem.objects.get(cart_id=cart_pk, product=product)
+        except CartItem.DoesNotExist:
+            return product
+        else:
+            raise serializers.ValidationError({"detail": _("This product is exist in the customer's cart.")})
+
+    def validate(self, attrs):
+        product = attrs.get('product')
+        quantity = attrs.get('quantity')
+
+        if quantity > product.inventory:
+            raise serializers.ValidationError(
+                {"detail": _("You can't add product more than product's inventory(%(product_quantity)d) to your cart.") % {'product_quantity': product.inventory}}
+            )
+
+        return super().validate(attrs)
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['product'] = CartItemProductSerializer(instance.product).data
+        return representation
+
+    def create(self, validated_data):
+        cart_pk = self.context.get('cart_pk')
+
+        return CartItem.objects.create(
+            cart_id=cart_pk,
+            **validated_data
+        )
+
+
+class CartItemUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CartItem
+        fields = ['quantity']
+    
+    def validate(self, attrs):
+        product = self.instance.product
+        quantity = attrs.get('quantity')
+
+        if quantity > product.inventory:
+            raise serializers.ValidationError(
+                {"detail": _("You can't add product more than product's inventory(%(product_quantity)d) to your cart.") % {'product_quantity': product.inventory}}
+            )
+        
+        return super().validate(attrs)
+
 
 
 class CartSerializer(serializers.ModelSerializer):

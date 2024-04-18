@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-17 09:19+0330\n"
-"PO-Revision-Date: 2024-04-17 09:20+0330\n"
+"POT-Creation-Date: 2024-04-17 15:00+0330\n"
+"PO-Revision-Date: 2024-04-17 15:01+0330\n"
 "Last-Translator: Anonymous User <None>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -422,6 +422,19 @@ msgstr "یک یا چند عکس وجود دارد که متعلق به محصو�
 #: serializers.py:470 serializers.py:521
 msgid "This field may not be null"
 msgstr "این فیلد نمیتواند هیچ مقدار باشد"
+
+#: serializers.py:625
+msgid "This product is exist in the customer's cart."
+msgstr "این محصول در سبد خرید مشتری وجود دارد."
+
+#: serializers.py:633
+#, python-format
+msgid ""
+"You can't add product more than product's inventory(%(product_quantity)d) to"
+" your cart."
+msgstr ""
+"نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سبد خرید "
+"خود اضافه کنید."
 
 #: validators.py:8
 msgid ""

@@ -557,3 +557,44 @@ class CartViewSet(ModelViewSet):
 
         serializer = serializers.CartDetailSerializer(cart)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CartItemViewset(ModelViewSet):
+    http_method_names = ['get', 'head', 'options', 'post', 'patch', 'delete']
+
+    def get_permissions(self):
+        cart_pk = self.kwargs.get('cart_pk')
+
+        if cart_pk == 'me':
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
+
+    @cached_property
+    def cart(self):
+        cart_pk = self.kwargs.get('cart_pk')
+
+        if cart_pk == 'me':
+            cart = Cart.objects.get(customer=self.request.user.customer)
+        else:
+            try:
+                cart_pk = int(cart_pk)
+                cart = Cart.objects.get(id=cart_pk)
+            except (ValueError, Cart.DoesNotExist):
+                raise Http404
+    
+        return cart
+    
+    def get_queryset(self):
+        cart = self.cart
+
+        return CartItem.objects.filter(cart=cart).select_related('product')
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return serializers.CartItemCreateSerializer
+        elif self.action == 'partial_update':
+            return serializers.CartItemUpdateSerializer
+        return serializers.CartItemSerializer
+    
+    def get_serializer_context(self):
+        return {'cart_pk': self.cart.pk}

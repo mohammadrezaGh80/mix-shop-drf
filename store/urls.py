@@ -29,7 +29,10 @@ products_router = routers.NestedDefaultRouter(router, 'products', lookup='produc
 products_router.register('comments', views.CommentViewSet, basename='product-comments')
 products_router.register('images', views.ProductImageViewSet, basename='product-images')
 
-urlpatterns = router.urls + customers_router.urls + sellers_router.urls + products_router.urls + seller_products_router.urls + [
+carts_router = routers.NestedDefaultRouter(router, 'carts', lookup='cart')
+carts_router.register('items', views.CartItemViewset, basename='cart-items')
+
+urlpatterns = router.urls + customers_router.urls + sellers_router.urls + products_router.urls + seller_products_router.urls + carts_router.urls + [
     path('request-seller/', views.RequestSellerGenericAPIView.as_view(), name='seller-request'),
     path('products/<int:product_pk>/comments/<int:comment_pk>/like/', views.CommentLikeAPIView.as_view(), name='comment-like'),
     path('products/<int:product_pk>/comments/<int:comment_pk>/dislike/', views.CommentDisLikeAPIView.as_view(), name='comment-dislike')

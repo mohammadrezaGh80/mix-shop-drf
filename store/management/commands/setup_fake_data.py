@@ -134,29 +134,34 @@ class Command(BaseCommand):
         all_comments = []
 
         for product in all_products:
-            for _ in range(random.randint(0, 5)):
-                comment = CommentFactory(
-                    content_object = random.choice(all_customers),
-                    product_id = product.id
-                )
-                comment.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12),day=random.randint(1,28), tzinfo=timezone.utc)
-                comment.modified_datetime = comment.created_datetime + timedelta(hours=random.randint(1, 500))
-                comment.save()
-                all_comments.append(comment)
-        Comment.objects.bulk_update(all_comments, fields=['created_datetime', 'modified_datetime'])
-        
+            if random.random() > 0.5:
+                for _ in range(random.randint(0, 5)):
+                    comment = CommentFactory(
+                        content_object = random.choice(all_customers),
+                        product_id = product.id
+                    )
+                    comment.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12),day=random.randint(1,28), tzinfo=timezone.utc)
+                    comment.modified_datetime = comment.created_datetime + timedelta(hours=random.randint(1, 500))
+                    comment.save()
+                    all_comments.append(comment)
+
         print("DONE")
 
         # cart items data
         print(f"Adding cart items...", end='')
-        for cart in all_carts:
-            products = random.sample(all_products, random.randint(1, 10))
-            for product in products:
-                CartItemFactory(
-                    cart_id=cart.id,
-                    product_id = product.id
-                )
+        all_cart_items = []
 
+        for cart in all_carts:
+            if random.random() <= 0.3:
+                products = random.sample(all_products, random.randint(1, 3))
+                for product in products:
+                    cart_item = CartItemFactory(
+                        cart_id=cart.id,
+                        product_id = product.id,
+                        quantity = random.randint(1, product.inventory)
+                    )
+                    all_cart_items.append(cart_item)
+        
         print("DONE")
 
         # orders data
@@ -171,7 +176,7 @@ class Command(BaseCommand):
             order.modified_datetime = order.created_datetime + timedelta(hours=random.randint(1, 500))
             order.save()
             all_orders.append(order)
-        
+
         print("DONE")
 
         # order items data
