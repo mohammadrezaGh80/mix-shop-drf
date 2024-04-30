@@ -3,8 +3,7 @@ from django.db import transaction
 
 import random
 from faker import Faker
-from datetime import datetime, timedelta
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
 
 from store.models import Address, Customer, Category, Product, Comment, Seller, Cart, CartItem, Order, OrderItem
 from store.factories import (
@@ -105,7 +104,7 @@ class Command(BaseCommand):
         all_person = all_customers + all_sellers
 
         for person in all_person:
-            for _ in range(random.randint(0, 3)):
+            for _ in range(random.randint(1, 3)):
                 address = AddressFactory(
                     content_object=person
                 )
@@ -152,7 +151,7 @@ class Command(BaseCommand):
         all_cart_items = []
 
         for cart in all_carts:
-            if random.random() <= 0.3:
+            if random.random() <= 0.4:
                 products = random.sample(all_products, random.randint(1, 3))
                 for product in products:
                     cart_item = CartItemFactory(
@@ -169,11 +168,14 @@ class Command(BaseCommand):
         all_orders = list()
 
         for _ in range(NUM_ORDERS):
+            customer=random.choice(all_customers)
             order = OrderFactory(
-                customer_id=random.choice(all_customers).id
+                customer=customer,
+                address=random.choice(customer.addresses.all()),
+                created_datetime=datetime.now()
             )
             order.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12), day=random.randint(1,28), tzinfo=timezone.utc)
-            order.modified_datetime = order.created_datetime + timedelta(hours=random.randint(1, 500))
+            order.delivery_date = order.created_datetime.date() + timedelta(days=random.choice([3, 4, 5]))
             order.save()
             all_orders.append(order)
 
@@ -184,10 +186,12 @@ class Command(BaseCommand):
         for order in all_orders:
             products = random.sample(all_products, random.randint(1, 10))
             for product in products:
-                OrderItemFactory(
+                order_item = OrderItemFactory(
                     order_id=order.id,
-                    product_id=product.id,
-                    price=product.price,
+                    product_id=product.id
                 )
+                if order.status == Order.ORDER_STATUS_PAID:
+                    order_item.price = product.price
+                    order_item.save()
         
         print("DONE")

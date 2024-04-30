@@ -122,3 +122,14 @@ class ProductImagePermission(permissions.BasePermission):
             request.user.seller.status == Seller.SELLER_STATUS_ACCEPTED and
             request.user.seller == ProductImagePermission.product.seller
         )
+
+class IsCustomerInfoComplete(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        fields = ['first_name', 'last_name', 'birth_date', 'gender']
+        customer = request.user.customer
+
+        for field in fields:
+            if not getattr(customer, field, False):
+                raise PermissionDenied(detail=_('To register an order, you must first complete your personal information in your profile.'))
+        return True

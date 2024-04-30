@@ -5,12 +5,13 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import FileExtensionValidator
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
-from datetime import date
+from datetime import date, timedelta
 from types import NoneType
 from mptt.exceptions import InvalidMove
 
-from .models import Cart, CartItem, Category, Comment, Customer, Address, Person, ProductImage, Seller, Product
+from .models import Cart, CartItem, Category, Comment, Customer, Address, Order, OrderItem, Person, ProductImage, Seller, Product
 
 User = get_user_model()
 
@@ -488,23 +489,6 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         ProductImage.objects.bulk_update(product_images, fields=['product'])
 
         return product
-        
-    def update(self, instance, validated_data):
-        title = validated_data.get('title')
-        if title:
-            instance.slug = slugify(title)
-            instance.save(update_fields=['slug'])
-
-        image_ids = validated_data.pop('image_ids', [])
-        product_images = []
-        for image_id in image_ids:
-            product_image = ProductImage.objects.get(pk=image_id)
-            product_image.product = instance
-            product_images.append(product_image)
-        
-        ProductImage.objects.bulk_update(product_images, fields=['product'])
-
-        return super().update(instance, validated_data)
 
 
 class ProductUpdateSerializer(serializers.ModelSerializer):
@@ -609,10 +593,11 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 
 class CartItemCreateSerializer(serializers.ModelSerializer):
+    total_price = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
-        fields = ['id', 'product', 'quantity']
+        fields = ['id', 'product', 'quantity', 'total_price']
     
     def validate_product(self, product):
         cart_pk = self.context.get('cart_pk')
@@ -634,6 +619,9 @@ class CartItemCreateSerializer(serializers.ModelSerializer):
             )
 
         return super().validate(attrs)
+    
+    def get_total_price(self, cart_item):
+        return cart_item.product.price * cart_item.quantity
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -659,7 +647,7 @@ class CartItemUpdateSerializer(serializers.ModelSerializer):
         product = self.instance.product
         quantity = attrs.get('quantity')
 
-        if quantity > product.inventory:
+        if isinstance(quantity, int) and quantity > product.inventory:
             raise serializers.ValidationError(
                 {"detail": _("You can't add product more than product's inventory(%(product_quantity)d) to your cart.") % {'product_quantity': product.inventory}}
             )
@@ -687,3 +675,111 @@ class CartDetailSerializer(serializers.ModelSerializer):
     
     def get_total_price(self, cart):
         return sum([cart_item.product.price * cart_item.quantity for cart_item in cart.items.all()])
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = CartItemProductSerializer()
+    total_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'quantity', 'price', 'total_price']
+    
+    def get_total_price(self, order_item):
+        if order_item.price:
+            return order_item.price * order_item.quantity
+        return order_item.product.price * order_item.quantity
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer()
+    items = OrderItemSerializer(many=True)
+    total_price = serializers.SerializerMethodField()
+    address = AddressCustomerSerializer()
+
+    class Meta:
+        model = Order
+        fields = ['id', 'customer', 'status', 'delivery_date', 'address', 'items', 'total_price']
+    
+    def get_total_price(self, order):
+        if order.status == Order.ORDER_STATUS_PAID:
+            return sum([order_item.price * order_item.quantity for order_item in order.items.all()])
+        return sum([order_item.product.price * order_item.quantity for order_item in order.items.all()])        
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['status'] = instance.get_status_display()
+        return representation
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ['id', 'customer', 'address', 'status', 'delivery_date']
+        read_only_fields = ['status']
+        extra_kwargs = {
+            'address': {'write_only': True}
+        }
+    
+    def validate_address(self, address):
+        customer = self.context.get('request').user.customer
+
+        if not address.content_object == customer:
+            raise serializers.ValidationError(_("The address with id=%(address_id)d doesn't belong to you.")  % {'address_id': address.id})
+            
+        return address
+    
+    def validate_delivery_date(self, delivery_date):
+        today = date.today()
+        next_day = today + timedelta(days=3)
+        valid_dates = []
+
+        for i in range(3):
+            if next_day.weekday() == 4:
+                next_day = next_day + timedelta(days=1)
+            valid_dates.append(next_day)
+            next_day = next_day + timedelta(days=1)
+
+        if delivery_date not in valid_dates:
+            raise serializers.ValidationError(_("It's not possible to deliver the order on the selected day(Valid dates: %(valid_dates)s).") % {"valid_dates": ", ".join([date.strftime("%d-%m-%Y") for date in valid_dates])})
+        return delivery_date
+    
+    def validate(self, attrs):
+        customer = self.context.get('request').user.customer
+        cart = customer.cart
+        
+        if CartItem.objects.filter(cart=cart).count() == 0:
+            raise serializers.ValidationError({'detail': _('Your cart is empty, Please add some products to it first.')})
+        
+        return super().validate(attrs)
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['status'] = instance.get_status_display()
+        return representation
+    
+    def create(self, validated_data):
+        with transaction.atomic():
+            customer = self.context.get('request').user.customer
+            cart = customer.cart
+            cart_items = cart.items.select_related('product')
+
+            order = Order(**validated_data)
+            order.customer = customer
+            order.save()
+
+            order_items = [
+                OrderItem(
+                    order=order,
+                    product=cart_item.product,
+                    quantity=cart_item.quantity,
+                ) for cart_item in cart_items
+            ]
+
+            OrderItem.objects.bulk_create(order_items)
+        
+            cart_items.all().delete()
+
+            return order

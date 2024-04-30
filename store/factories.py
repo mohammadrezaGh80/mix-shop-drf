@@ -5,7 +5,7 @@ from django.db.models import signals
 import random
 import string
 import factory
-from datetime import datetime
+from datetime import datetime, timedelta
 from faker import Faker
 
 from . import models
@@ -132,7 +132,8 @@ class OrderFactory(DjangoModelFactory):
     class Meta:
         model = models.Order
     
-    status = factory.LazyFunction(lambda: random.choice([models.Order.ORDER_STATUS_CANCELED, models.Order.ORDER_STATUS_UNPAID]))
+    status = factory.LazyFunction(lambda: random.choice([models.Order.ORDER_STATUS_CANCELED, models.Order.ORDER_STATUS_PAID]))
+    delivery_date = factory.LazyAttribute(lambda obj: obj.created_datetime.date() + timedelta(days=random.choice([3, 4, 5])))
 
 
 class OrderItemFactory(DjangoModelFactory):

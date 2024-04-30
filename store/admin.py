@@ -96,11 +96,11 @@ class CustomerAdmin(admin.ModelAdmin):
         )
         return format_html('<a href={}>{}</a>', url, customer.addresses_count)
     
-    @admin.display(description='phone', ordering='user__phone')
+    @admin.display(description=_('phone'), ordering='user__phone')
     def get_phone(self, customer):
         return customer.user.phone
     
-    @admin.display(description='age', ordering='birth_date')
+    @admin.display(description=_('age'), ordering='birth_date')
     def get_age(self, customer):
         if customer.birth_date:
             return (date.today() - customer.birth_date).days // 365
@@ -180,7 +180,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'category', 'seller', 'price', 'inventory', 'num_of_comments', 'viewer', 'created_datetime']
+    list_display = ['id', 'title', 'slug', 'category', 'seller', 'price', 'inventory', 'num_of_comments', 'viewer', 'created_datetime']
     list_per_page = 15
     list_filter = [InventoryFilter]
     autocomplete_fields = ['category']
@@ -288,7 +288,7 @@ class CartItemAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['customer', 'status', 'created_datetime']
+    list_display = ['customer', 'status', 'created_datetime', 'delivery_date']
     list_select_related = ['customer']
     search_fields = ['id']
     list_per_page = 15

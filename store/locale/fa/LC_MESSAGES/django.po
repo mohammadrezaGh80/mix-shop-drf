@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-17 15:00+0330\n"
-"PO-Revision-Date: 2024-04-17 15:01+0330\n"
+"POT-Creation-Date: 2024-04-30 15:07+0330\n"
+"PO-Revision-Date: 2024-04-30 15:13+0330\n"
 "Last-Translator: Anonymous User <None>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -43,9 +43,25 @@ msgstr "متوسط"
 msgid "High"
 msgstr "زیاد"
 
-#: admin.py:276
+#: admin.py:99 admin.py:276
 msgid "phone"
 msgstr "شماره تلفن"
+
+#: admin.py:103
+msgid "age"
+msgstr "سن"
+
+#: filters.py:128 models.py:375
+msgid "Paid"
+msgstr "پرداخت شده"
+
+#: filters.py:129 models.py:376
+msgid "Canceled"
+msgstr "لغو شده"
+
+#: filters.py:130 models.py:377
+msgid "Unpaid"
+msgstr "پرداخت نشده"
 
 #: models.py:28
 msgid "Province"
@@ -68,7 +84,7 @@ msgstr "کد پستی"
 msgid "There isn't any %(user_type)s with id=%(object_id)d."
 msgstr "%(user_type)s با شناسه %(object_id)d وجود ندارد."
 
-#: models.py:43
+#: models.py:43 models.py:382
 msgid "Address"
 msgstr "آدرس"
 
@@ -76,23 +92,23 @@ msgstr "آدرس"
 msgid "Addresses"
 msgstr "آدرس ها"
 
-#: models.py:58 serializers.py:149 serializers.py:177
+#: models.py:58 serializers.py:150 serializers.py:178
 msgid "First name"
 msgstr "نام"
 
-#: models.py:59 serializers.py:150 serializers.py:178
+#: models.py:59 serializers.py:151 serializers.py:179
 msgid "Last name"
 msgstr "نام خانوادگی"
 
-#: models.py:60 serializers.py:151 serializers.py:180
+#: models.py:60 serializers.py:152 serializers.py:181
 msgid "Birth date"
 msgstr "تاریخ تولد"
 
-#: models.py:61 serializers.py:152 serializers.py:179
+#: models.py:61 serializers.py:153 serializers.py:180
 msgid "Profile image"
 msgstr "عکس پروفایل"
 
-#: models.py:62 serializers.py:153 serializers.py:181
+#: models.py:62 serializers.py:154 serializers.py:182
 msgid "Gender"
 msgstr "جنسیت"
 
@@ -104,7 +120,7 @@ msgstr "کاربر"
 msgid "Wallet amount"
 msgstr "مقدار کیف پول"
 
-#: models.py:85 models.py:339
+#: models.py:85 models.py:339 models.py:380
 msgid "Customer"
 msgstr "مشتری"
 
@@ -128,7 +144,7 @@ msgstr "رد شده"
 msgid "Company name"
 msgstr "نام شرکت"
 
-#: models.py:104 serializers.py:156
+#: models.py:104 serializers.py:157
 msgid "CV"
 msgstr "رزومه"
 
@@ -136,7 +152,7 @@ msgstr "رزومه"
 msgid "National code"
 msgstr "کد ملی"
 
-#: models.py:106 models.py:253 models.py:379
+#: models.py:106 models.py:253 models.py:381
 msgid "Status"
 msgstr "وضعیت"
 
@@ -184,7 +200,7 @@ msgstr "اسلاگ"
 msgid "Description"
 msgstr "توضیحات"
 
-#: models.py:163 models.py:397
+#: models.py:163 models.py:400
 msgid "Price"
 msgstr "قیمت"
 
@@ -201,16 +217,15 @@ msgid "Viewer"
 msgstr "بیننده"
 
 #: models.py:168 models.py:257 models.py:294 models.py:321 models.py:341
-#: models.py:381
+#: models.py:384
 msgid "Created datetime"
 msgstr "تاریخ و زمان ایجاد شده"
 
 #: models.py:169 models.py:258 models.py:295 models.py:322 models.py:342
-#: models.py:382
 msgid "Modified datetime"
 msgstr "تاریخ و زمان اصلاح شده"
 
-#: models.py:175 models.py:180 models.py:250 models.py:354 models.py:395
+#: models.py:175 models.py:180 models.py:250 models.py:354 models.py:398
 msgid "Product"
 msgstr "محصول"
 
@@ -331,7 +346,7 @@ msgstr "سبد خرید"
 msgid "Carts"
 msgstr "سبدهای خرید"
 
-#: models.py:355 models.py:396
+#: models.py:355 models.py:399
 msgid "Quantity"
 msgstr "تعداد"
 
@@ -343,31 +358,23 @@ msgstr "کالای سبد خرید"
 msgid "Cart items"
 msgstr "کالاهای سبد خرید"
 
-#: models.py:373
-msgid "Paid"
-msgstr "پرداخت شده"
+#: models.py:385
+msgid "Delivery date"
+msgstr "تاریخ تحویل"
 
-#: models.py:374
-msgid "Canceled"
-msgstr "لغو شده"
-
-#: models.py:375
-msgid "Unpaid"
-msgstr "پرداخت نشده"
-
-#: models.py:389 models.py:394
+#: models.py:392 models.py:397
 msgid "Order"
 msgstr "سفارش"
 
-#: models.py:390
+#: models.py:393
 msgid "Orders"
 msgstr "سفارشات"
 
-#: models.py:405
+#: models.py:408
 msgid "Order item"
 msgstr "کالای سفارش"
 
-#: models.py:406
+#: models.py:409
 msgid "Order items"
 msgstr "کالاهای سفارش"
 
@@ -379,19 +386,26 @@ msgstr "درخواست شما در حال بررسی است."
 msgid "You are currently a seller."
 msgstr "در حال حاضر فروشنده هستید."
 
-#: serializers.py:90 serializers.py:155
+#: permissions.py:134
+msgid ""
+"To register an order, you must first complete your personal information in "
+"your profile."
+msgstr ""
+"برای ثبت سفارش، ابتدا باید اطلاعات شخصی خود را در پروفایل خود تکمیل کنید."
+
+#: serializers.py:91 serializers.py:156
 msgid "CV file size should be less than or equal to 5 megabytes"
 msgstr "حجم فایل رزومه باید حداکثر ۵ مگابایت باشد"
 
-#: serializers.py:101 serializers.py:171 serializers.py:208
+#: serializers.py:102 serializers.py:172 serializers.py:209
 msgid "Please choose your gender"
 msgstr "لطفا جنسیت خود را انتخاب کنید"
 
-#: serializers.py:109
+#: serializers.py:110
 msgid "CV file size should be less than or equal to 5 megabytes."
 msgstr "حجم فایل رزومه باید حداکثر ۵ مگابایت باشد."
 
-#: serializers.py:242
+#: serializers.py:243
 msgid ""
 "A category may not be made a sub_category of any of its descendants or "
 "itself"
@@ -399,35 +413,35 @@ msgstr ""
 "یک دسته بندی را نمی توان به عنوان یک زیر دسته بندی از نوادگانش یا خودش قرار "
 "داد"
 
-#: serializers.py:329
+#: serializers.py:330
 #, python-format
 msgid ""
 "There isn't comment with id=%(reply_to_id)d in the %(product_title)s "
 "product."
 msgstr "نظری با شناسه %(reply_to_id)d در محصول %(product_title)s وجود ندارد."
 
-#: serializers.py:449
+#: serializers.py:450
 msgid "Image ids"
 msgstr "شناسه عکس ها"
 
-#: serializers.py:461
+#: serializers.py:462
 #, python-format
 msgid "There isn't any product image with id=%(image_id)s."
 msgstr "عکس محصولی با شناسه %(image_id)s وجود ندارد."
 
-#: serializers.py:464
+#: serializers.py:465
 msgid "There is one or more images that belong to another products."
 msgstr "یک یا چند عکس وجود دارد که متعلق به محصولات دیگر است."
 
-#: serializers.py:470 serializers.py:521
+#: serializers.py:471 serializers.py:505
 msgid "This field may not be null"
 msgstr "این فیلد نمیتواند هیچ مقدار باشد"
 
-#: serializers.py:625
+#: serializers.py:610
 msgid "This product is exist in the customer's cart."
 msgstr "این محصول در سبد خرید مشتری وجود دارد."
 
-#: serializers.py:633
+#: serializers.py:618 serializers.py:652
 #, python-format
 msgid ""
 "You can't add product more than product's inventory(%(product_quantity)d) to"
@@ -435,6 +449,24 @@ msgid ""
 msgstr ""
 "نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سبد خرید "
 "خود اضافه کنید."
+
+#: serializers.py:730
+#, python-format
+msgid "The address with id=%(address_id)d doesn't belong to you."
+msgstr "آدرسی با شناسه %(address_id)d  متعلق به شما نیست."
+
+#: serializers.py:746
+#, python-format
+msgid ""
+"It's not possible to deliver the order on the selected day(Valid dates: "
+"%(valid_dates)s)."
+msgstr ""
+"امکان تحویل سفارش در روز انتخاب شده وجود ندارد(تاریخ های معتبر: "
+"%(valid_dates)s)."
+
+#: serializers.py:754
+msgid "Your cart is empty, Please add some products to it first."
+msgstr "سبد خرید شما خالی است، لطفا ابتدا محصولاتی را به آن اضافه کنید."
 
 #: validators.py:8
 msgid ""
@@ -448,6 +480,14 @@ msgid ""
 msgstr ""
 "یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1"
 " تا 9 شروع می شود."
+
+#: validators.py:25
+msgid ""
+"Enter a valid phone number, phone number must have 11 digits which starts "
+"with the number 09."
+msgstr ""
+"یک شماره تلفن معتبر وارد کنید، شماره تلفن باید دارای 11 رقم باشد که با رقم "
+"های 09 شروع می شود."
 
 #: views.py:109
 msgid "Your request has been successfully registered."
@@ -504,6 +544,12 @@ msgstr "مخالفت نظر حذف شد."
 #: views.py:522
 msgid "The comment was successfully disliked."
 msgstr "نظر با موفقیت مخالفت شد."
+
+#~ msgid "Order register datetime"
+#~ msgstr "تاریخ و زمان ثبت سفارش"
+
+#~ msgid "Phone"
+#~ msgstr "شماره تلفن"
 
 #~ msgid "ID"
 #~ msgstr "شناسه"

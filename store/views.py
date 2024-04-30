@@ -13,10 +13,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
 
 from . import serializers
-from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Product, ProductImage, Seller
+from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller
 from .paginations import CustomLimitOffsetPagination
-from .filters import CustomerFilter, SellerFilter, ProductFilter, SellerMeProductFilter
-from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission
+from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter
+from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete
 from .ordering import ProductOrderingFilter
 
 
@@ -43,7 +43,7 @@ class CustomerViewSet(ModelViewSet):
     @action(detail=False, methods=['GET', 'PUT', 'PATCH'], permission_classes=[IsAuthenticated])
     def me(self, request, *args, **kwargs):
         user = request.user
-        customer = self.queryset.get(id=user.customer.id)
+        customer = self.queryset.prefetch_related('addresses').get(id=user.customer.id)
 
         if request.method == 'GET':
             serializer = serializers.CustomerDetailSerializer(customer, context=self.get_serializer_context())
@@ -524,7 +524,7 @@ class CommentDisLikeAPIView(APIView):
 
 class CartViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options']
-    queryset = Cart.objects.select_related('customer__user')
+    queryset = Cart.objects.select_related('customer__user').order_by('-created_datetime')
     permission_classes = [IsAdminUser]
     pagination_class = CustomLimitOffsetPagination
 
@@ -598,3 +598,42 @@ class CartItemViewset(ModelViewSet):
     
     def get_serializer_context(self):
         return {'cart_pk': self.cart.pk}
+
+
+class OrderViewSet(ModelViewSet):
+    http_method_names = ['get', 'options', 'head', 'post', 'patch', 'delete']
+    queryset = Order.objects.all().select_related('customer__user').order_by('-created_datetime')
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = OrderFilter
+    pagination_class = CustomLimitOffsetPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.action in ['retrieve', 'create']:
+            return queryset.prefetch_related(
+                Prefetch('items',
+                         queryset=OrderItem.objects.select_related('product')
+                )
+            )
+
+        return queryset
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsCustomerInfoComplete()]
+        return [IsAdminUser()]
+    
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return serializers.OrderDetailSerializer
+        return serializers.OrderSerializer
+    
+    def create(self, request, *args, **kwargs):
+        created_order_serializer = self.get_serializer(data=request.data)
+        created_order_serializer.is_valid(raise_exception=True)
+        created_order = created_order_serializer.save()
+        created_order = self.get_queryset().get(id=created_order.pk)
+
+        serializer = serializers.OrderDetailSerializer(created_order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

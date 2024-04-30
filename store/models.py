@@ -375,11 +375,12 @@ class Order(models.Model):
         (ORDER_STATUS_UNPAID, _("Unpaid"))
     ]
 
-    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="orders")
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="orders", verbose_name=_("Customer"))
     status = models.CharField(max_length=1, choices=ORDER_STATUS, default=ORDER_STATUS_UNPAID, verbose_name=_("Status"))
+    address = models.ForeignKey(Address, on_delete=models.PROTECT, related_name="orders", verbose_name=_("Address"))
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
-    modified_datetime = models.DateTimeField(auto_now=True, verbose_name=_("Modified datetime"))
+    delivery_date = models.DateField(verbose_name=_("Delivery date"))
 
 
     def __str__(self):
@@ -394,7 +395,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="items", verbose_name=_("Order"))
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="order_items", verbose_name=_("Product"))
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
-    price = models.PositiveIntegerField(verbose_name=_("Price"))
+    price = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("Price"))
 
 
     def __str__(self):

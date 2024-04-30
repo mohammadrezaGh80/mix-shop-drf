@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from datetime import date, timedelta
 
-from .models import Category, Customer, Product, Seller
+from .models import Category, Customer, Order, Product, Seller
 
 
 class CustomerFilter(django_filters.FilterSet):
@@ -105,11 +105,44 @@ class SellerMeProductFilter(django_filters.FilterSet):
 
         filter_condition = {f'{field_name}__in': list_category_descendants}
         return queryset.filter(**filter_condition)
+    
+    class Meta:
+        model = Seller
+        fields = []
+
+
+class ProductFilter(SellerMeProductFilter):
+    seller = django_filters.NumberFilter(field_name='seller', lookup_expr='exact', label='seller')
 
     class Meta:
         model = Product
         fields = []
 
 
-class ProductFilter(SellerMeProductFilter):
-    seller = django_filters.NumberFilter(field_name='seller', lookup_expr='exact', label='seller')
+class OrderFilter(django_filters.FilterSet):
+
+    ORDER_STATUS_PAID = "p"
+    ORDER_STATUS_UNPAID = "u"
+    ORDER_STATUS_CANCELED = "c"
+    ORDER_STATUS = [
+        (ORDER_STATUS_PAID, _("Paid")),
+        (ORDER_STATUS_CANCELED, _("Canceled")),
+        (ORDER_STATUS_UNPAID, _("Unpaid"))
+    ]
+
+    status = django_filters.ChoiceFilter(field_name='status', choices=ORDER_STATUS, method='filter_status', label='status')
+
+    def filter_status(self, queryset, field_name, value):
+        if value == self.ORDER_STATUS_UNPAID:
+            filter_condition = {field_name: self.ORDER_STATUS_UNPAID}
+            return queryset.filter(**filter_condition)
+        elif value == self.ORDER_STATUS_CANCELED:
+            filter_condition = {field_name: self.ORDER_STATUS_CANCELED}
+            return queryset.filter(**filter_condition)
+        elif value == self.ORDER_STATUS_PAID:
+            filter_condition = {field_name: self.ORDER_STATUS_PAID}
+            return queryset.filter(**filter_condition)
+    
+    class Meta:
+        model = Order
+        fields = []
