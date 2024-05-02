@@ -695,7 +695,6 @@ class OrderMeViewSet(ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        print(serializer.validated_data)
         order_status = serializer.validated_data.get('status')
         serializer.save()
 
@@ -712,3 +711,28 @@ class OrderMeViewSet(ModelViewSet):
         OrderItem.objects.bulk_update(order_items, fields=['price'])
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ClearAllCartAPIView(APIView):
+
+    def get_permissions(self):
+        cart_pk = self.kwargs.get('cart_pk')
+
+        if cart_pk:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
+    def post(self, request, *args, **kwargs):
+        cart_pk = self.kwargs.get('cart_pk')
+        
+        if cart_pk:
+            cart = Cart.objects.get(id=cart_pk)
+        else:    
+            customer = request.user.customer
+            cart = Cart.objects.get(customer_id=customer.id)
+        
+        if cart.items.count() == 0:
+            return Response({'detail': _('The cart is empty.')}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart.items.all().delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

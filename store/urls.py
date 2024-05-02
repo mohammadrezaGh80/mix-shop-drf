@@ -38,5 +38,7 @@ urlpatterns = [
     path('products/<int:product_pk>/comments/<int:comment_pk>/like/', views.CommentLikeAPIView.as_view(), name='comment-like'),
     path('products/<int:product_pk>/comments/<int:comment_pk>/dislike/', views.CommentDisLikeAPIView.as_view(), name='comment-dislike'),
     path('orders/me/', views.OrderMeViewSet.as_view({'get': 'list'}), name='order-me'),
-    path('orders/me/<int:pk>/', views.OrderMeViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='order-me-detail')
+    path('orders/me/<int:pk>/', views.OrderMeViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='order-me-detail'),
+    path('carts/<int:cart_pk>/clear/', views.ClearAllCartAPIView.as_view(), name='clear-all-cart'),
+    path('carts/me/clear/', views.ClearAllCartAPIView.as_view(), name='clear-all-cart-me'),
 ] + router.urls + customers_router.urls + sellers_router.urls + products_router.urls + seller_products_router.urls + carts_router.urls
