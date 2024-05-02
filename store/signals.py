@@ -3,7 +3,7 @@ from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
 
 
-from .models import Customer, Seller, Cart
+from .models import Customer, Seller, Cart, Order, OrderItem
 from core.signals import superuser_created, add_user_to_staff, remove_users_from_staff
 
 User = get_user_model()
@@ -141,3 +141,21 @@ def remove_seller_when_status_change_to_rejected(sender, instance, created, **kw
 def create_cart_for_newly_created_customer(sender, instance, created, **kwrgs):
     if created:
         Cart.objects.create(customer=instance)
+
+
+@receiver(pre_save, sender=Order)
+def change_price_order_items_based_on_change_status_order(sender, instance, **kwargs):
+    if instance.id:
+        previous_instance = Order.objects.get(id=instance.id)
+        if instance.status != previous_instance.status:
+            order_items = []
+            if instance.status == Order.ORDER_STATUS_PAID:
+                for order_item in instance.items.all():
+                    order_item.price = order_item.product.price
+                    order_items.append(order_item)
+            else:
+                for order_item in instance.items.all():
+                    order_item.price = None
+                    order_items.append(order_item)
+
+            OrderItem.objects.bulk_update(order_items, fields=['price'])
