@@ -222,7 +222,7 @@ class SellerChangeStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seller
-        fields = ['status']
+        fields = ['id', 'status']
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -641,7 +641,7 @@ class CartItemUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ['quantity']
+        fields = ['id', 'quantity']
     
     def validate(self, attrs):
         product = self.instance.product
@@ -686,7 +686,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'quantity', 'price', 'total_price']
     
     def get_total_price(self, order_item):
-        if order_item.price:
+        if order_item.order.status == Order.ORDER_STATUS_PAID:
             return order_item.price * order_item.quantity
         return order_item.product.price * order_item.quantity
 
@@ -696,10 +696,11 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     total_price = serializers.SerializerMethodField()
     address = AddressCustomerSerializer()
+    created_datetime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'status', 'delivery_date', 'address', 'items', 'total_price']
+        fields = ['id', 'customer', 'status', 'created_datetime', 'delivery_date', 'address', 'items', 'total_price']
     
     def get_total_price(self, order):
         if order.status == Order.ORDER_STATUS_PAID:
@@ -714,10 +715,11 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(read_only=True)
+    created_datetime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'address', 'status', 'delivery_date']
+        fields = ['id', 'customer', 'address', 'status', 'created_datetime', 'delivery_date']
         read_only_fields = ['status']
         extra_kwargs = {
             'address': {'write_only': True}
@@ -783,3 +785,50 @@ class OrderSerializer(serializers.ModelSerializer):
             cart_items.all().delete()
 
             return order
+
+
+class OrderMeSerializer(serializers.ModelSerializer):
+    created_datetime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+
+    class Meta:
+        model = Order
+        fields = ['id', 'status', 'created_datetime']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['status'] = instance.get_status_display()
+        return representation
+
+
+class OrderMeDetailSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+    total_price = serializers.SerializerMethodField()
+    address = AddressCustomerSerializer()
+    created_datetime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ['id', 'status', 'created_datetime', 'delivery_date', 'address', 'items', 'total_price']
+    
+    def get_total_price(self, order):
+        if order.status == Order.ORDER_STATUS_PAID:
+            return sum([order_item.price * order_item.quantity for order_item in order.items.all()])
+        return sum([order_item.product.price * order_item.quantity for order_item in order.items.all()])        
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['status'] = instance.get_status_display()
+        return representation
+
+
+class OrderUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Order
+        fields = ['id', 'status']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['status'] = instance.get_status_display()
+        return representation
+    

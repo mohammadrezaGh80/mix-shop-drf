@@ -392,7 +392,7 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="items", verbose_name=_("Order"))
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items", verbose_name=_("Order"))
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="order_items", verbose_name=_("Product"))
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
     price = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("Price"))

@@ -33,8 +33,10 @@ products_router.register('images', views.ProductImageViewSet, basename='product-
 carts_router = routers.NestedDefaultRouter(router, 'carts', lookup='cart')
 carts_router.register('items', views.CartItemViewset, basename='cart-items')
 
-urlpatterns = router.urls + customers_router.urls + sellers_router.urls + products_router.urls + seller_products_router.urls + carts_router.urls + [
+urlpatterns = [
     path('request-seller/', views.RequestSellerGenericAPIView.as_view(), name='seller-request'),
     path('products/<int:product_pk>/comments/<int:comment_pk>/like/', views.CommentLikeAPIView.as_view(), name='comment-like'),
-    path('products/<int:product_pk>/comments/<int:comment_pk>/dislike/', views.CommentDisLikeAPIView.as_view(), name='comment-dislike')
-]
+    path('products/<int:product_pk>/comments/<int:comment_pk>/dislike/', views.CommentDisLikeAPIView.as_view(), name='comment-dislike'),
+    path('orders/me/', views.OrderMeViewSet.as_view({'get': 'list'}), name='order-me'),
+    path('orders/me/<int:pk>/', views.OrderMeViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='order-me-detail')
+] + router.urls + customers_router.urls + sellers_router.urls + products_router.urls + seller_products_router.urls + carts_router.urls

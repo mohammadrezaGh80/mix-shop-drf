@@ -547,7 +547,7 @@ class CartViewSet(ModelViewSet):
     
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def me(self, request, *args, **kwargs):
-        queryset = self.queryset.prefetch_related(
+        queryset = self.get_queryset().prefetch_related(
                 Prefetch('items',
                          queryset=CartItem.objects.select_related('product')
                 )
@@ -615,18 +615,20 @@ class OrderViewSet(ModelViewSet):
                 Prefetch('items',
                          queryset=OrderItem.objects.select_related('product')
                 )
-            )
+            ).select_related('address')
 
         return queryset
 
     def get_permissions(self):
         if self.action == 'create':
-            return [IsCustomerInfoComplete()]
+            return [IsAuthenticated(), IsCustomerInfoComplete()]
         return [IsAdminUser()]
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return serializers.OrderDetailSerializer
+        elif self.action == 'partial_update':
+            return serializers.OrderUpdateSerializer
         return serializers.OrderSerializer
     
     def create(self, request, *args, **kwargs):
@@ -637,3 +639,76 @@ class OrderViewSet(ModelViewSet):
 
         serializer = serializers.OrderDetailSerializer(created_order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        print(serializer.validated_data)
+        order_status = serializer.validated_data.get('status')
+        serializer.save()
+
+        order_items = []
+        if order_status == Order.ORDER_STATUS_PAID:
+            for order_item in instance.items.all():
+                order_item.price = order_item.product.price
+                order_items.append(order_item)
+        else:
+            for order_item in instance.items.all():
+                order_item.price = None
+                order_items.append(order_item)
+
+        OrderItem.objects.bulk_update(order_items, fields=['price'])
+
+        return Response(serializer.data, status=status.HTTP_200_OK)        
+
+
+class OrderMeViewSet(ModelViewSet):
+    http_method_names = ['get', 'options', 'head', 'patch', 'delete']
+
+    def get_queryset(self):
+        customer = self.request.user.customer
+        queryset = Order.objects.filter(customer=customer).select_related('customer__user').order_by('-created_datetime')
+
+        if self.action =='retrieve':
+            return queryset.prefetch_related(
+                Prefetch('items',
+                         queryset=OrderItem.objects.select_related('product')
+                )
+            ).select_related('address')
+        
+        return queryset
+    
+    def get_permissions(self):
+        if self.action in ['destroy', 'partial_update']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+    
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return serializers.OrderMeDetailSerializer
+        elif self.action == 'partial_update':
+            return serializers.OrderUpdateSerializer
+        return serializers.OrderMeSerializer
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        print(serializer.validated_data)
+        order_status = serializer.validated_data.get('status')
+        serializer.save()
+
+        order_items = []
+        if order_status == Order.ORDER_STATUS_PAID:
+            for order_item in instance.items.all():
+                order_item.price = order_item.product.price
+                order_items.append(order_item)
+        else:
+            for order_item in instance.items.all():
+                order_item.price = None
+                order_items.append(order_item)
+
+        OrderItem.objects.bulk_update(order_items, fields=['price'])
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
