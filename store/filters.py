@@ -132,6 +132,7 @@ class OrderFilter(django_filters.FilterSet):
 
     status = django_filters.ChoiceFilter(field_name='status', choices=ORDER_STATUS, method='filter_status', label='status')
     customer = django_filters.NumberFilter(field_name='customer', lookup_expr='exact', label='customer')
+    delivery_date = django_filters.DateFromToRangeFilter(field_name='delivery_date', lookup_expr='in', label='delivery_date')
 
     def filter_status(self, queryset, field_name, value):
         if value == self.ORDER_STATUS_UNPAID:
