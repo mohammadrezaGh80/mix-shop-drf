@@ -108,7 +108,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'USER': env('DJANGO_DATABASE_USER'),
         'NAME': env('DJANGO_DATABASE_NAME'),
-        'PASSWORD': env('DJANGO_DATABASE_PASSWORD'),
+        'password': env('DJANGO_DATABASE_PASSWORD'),
         'HOST': env('DJANGO_DATABASE_HOST'),
     }
 }
@@ -178,3 +178,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int('DJANGO_JWT_ACCESS_MINUTES')),
     "REFRESH_TOKEN_LIFETIME": timedelta(minutes=env.int('DJANGO_JWT_REFRESH_MINUTES')),
 }    
+
+# Config zarinpal
+ZARINPAL_MERCHANT_ID = env('DJANGO_ZARINPAL_MERCHANT_ID')
+ZARINPAL_REQUEST_URL = 'https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json'

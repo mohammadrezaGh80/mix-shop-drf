@@ -41,4 +41,5 @@ urlpatterns = [
     path('orders/me/<int:pk>/', views.OrderMeViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='order-me-detail'),
     path('carts/<int:cart_pk>/clear/', views.ClearAllCartAPIView.as_view(), name='clear-all-cart'),
     path('carts/me/clear/', views.ClearAllCartAPIView.as_view(), name='clear-all-cart-me'),
+    path('payment/', views.PaymentProcessSandboxAPIView.as_view(), name='payment-process')
 ] + router.urls + customers_router.urls + sellers_router.urls + products_router.urls + seller_products_router.urls + carts_router.urls

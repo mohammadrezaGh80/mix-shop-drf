@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-02 11:03+0330\n"
-"PO-Revision-Date: 2024-05-02 11:04+0330\n"
+"POT-Creation-Date: 2024-05-07 10:47+0330\n"
+"PO-Revision-Date: 2024-05-07 10:49+0330\n"
 "Last-Translator: Anonymous User <None>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -200,7 +200,7 @@ msgstr "اسلاگ"
 msgid "Description"
 msgstr "توضیحات"
 
-#: models.py:163 models.py:398
+#: models.py:163 models.py:408
 msgid "Price"
 msgstr "قیمت"
 
@@ -217,7 +217,7 @@ msgid "Viewer"
 msgstr "بیننده"
 
 #: models.py:168 models.py:257 models.py:294 models.py:321 models.py:341
-#: models.py:382
+#: models.py:384
 msgid "Created datetime"
 msgstr "تاریخ و زمان ایجاد شده"
 
@@ -225,7 +225,7 @@ msgstr "تاریخ و زمان ایجاد شده"
 msgid "Modified datetime"
 msgstr "تاریخ و زمان اصلاح شده"
 
-#: models.py:175 models.py:180 models.py:250 models.py:354 models.py:396
+#: models.py:175 models.py:180 models.py:250 models.py:354 models.py:406
 msgid "Product"
 msgstr "محصول"
 
@@ -346,7 +346,7 @@ msgstr "سبد خرید"
 msgid "Carts"
 msgstr "سبدهای خرید"
 
-#: models.py:355 models.py:397
+#: models.py:355 models.py:407
 msgid "Quantity"
 msgstr "تعداد"
 
@@ -358,23 +358,27 @@ msgstr "کالای سبد خرید"
 msgid "Cart items"
 msgstr "کالاهای سبد خرید"
 
-#: models.py:383
+#: models.py:382
+msgid "Zarinpal authority"
+msgstr "شناسه مرجع درخواست زرین پال"
+
+#: models.py:385
 msgid "Delivery date"
 msgstr "تاریخ تحویل"
 
-#: models.py:390 models.py:395
+#: models.py:400 models.py:405
 msgid "Order"
 msgstr "سفارش"
 
-#: models.py:391
+#: models.py:401
 msgid "Orders"
 msgstr "سفارشات"
 
-#: models.py:406
+#: models.py:416
 msgid "Order item"
 msgstr "کالای سفارش"
 
-#: models.py:407
+#: models.py:417
 msgid "Order items"
 msgstr "کالاهای سفارش"
 
@@ -481,65 +485,69 @@ msgstr ""
 "یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1"
 " تا 9 شروع می شود."
 
-#: views.py:109
+#: views.py:112
 msgid "Your request has been successfully registered."
 msgstr "درخواست شما با موفقیت ثبت شد."
 
-#: views.py:137
+#: views.py:140
 msgid "There is some products relating this seller, Please remove them first."
 msgstr ""
 "برخی از محصولات مربوط به این فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:160
+#: views.py:163
 msgid "There is some products relating to you, Please remove them first."
 msgstr "برخی از محصولات مربوط به شما هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:278
+#: views.py:281
 msgid ""
 "There is some products relating this category, Please remove them first."
 msgstr ""
 "برخی از محصولات مربوط به این دسته بندی هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:335
+#: views.py:338
 msgid ""
 "There is some order items relating this product, Please remove them first."
 msgstr ""
 "برخی از کالاهای سفارش مربوط به این محصول هستند، لطفاً ابتدا آنها را حذف "
 "کنید."
 
-#: views.py:458 views.py:499
+#: views.py:461 views.py:502
 #, python-format
 msgid ""
 "There isn't comment with id=%(comment_id)d in the %(product_title)s product."
 msgstr "نظری با شناسه %(comment_id)d در محصول %(product_title)s وجود ندارد."
 
-#: views.py:461
+#: views.py:464
 msgid "A comment that is a reply cannot be liked."
 msgstr "نظری که یک پاسخ است نمی تواند موافقت شود."
 
-#: views.py:477
+#: views.py:480
 msgid "The comment like was removed."
 msgstr "موافقت نظر حذف شد."
 
-#: views.py:481
+#: views.py:484
 msgid "The comment was successfully liked."
 msgstr "نظر با موفقیت موافقت شد."
 
-#: views.py:502
+#: views.py:505
 msgid "A comment that is a reply cannot be disliked."
 msgstr "نظری که یک پاسخ است نمی تواند مخالفت شود."
 
-#: views.py:518
+#: views.py:521
 msgid "The comment dislike was removed."
 msgstr "مخالفت نظر حذف شد."
 
-#: views.py:522
+#: views.py:525
 msgid "The comment was successfully disliked."
 msgstr "نظر با موفقیت مخالفت شد."
 
-#: views.py:736
+#: views.py:738
 msgid "The cart is empty."
 msgstr "سبد خرید خالی است."
+
+#: views.py:777
+msgid "Error from zarinpal."
+msgstr "خطا از طرف زرین پال."
 
 #~ msgid ""
 #~ "Enter a valid phone number, phone number must have 11 digits which starts "

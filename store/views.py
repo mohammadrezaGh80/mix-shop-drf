@@ -8,15 +8,19 @@ from rest_framework import generics
 from django.db.models import Prefetch
 from django.utils.translation import gettext as _
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404, redirect
+from django.conf import settings
 
 from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
+import json
+import requests
 
 from . import serializers
 from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter
-from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete
+from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete, IsCustomerOwner
 from .ordering import ProductOrderingFilter
 
 
@@ -736,3 +740,39 @@ class ClearAllCartAPIView(APIView):
 
         cart.items.all().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PaymentProcessSandboxAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsCustomerOwner]
+
+    def get(self, request, *args, **kwargs):
+        customer = request.user.customer
+        order_id = request.query_params.get('order_id')
+        order = get_object_or_404(Order, id=order_id)
+
+        rial_total_price = order.get_total_price()
+
+        request_header = {
+            "accept": "application/json",
+            "content-type": "application/json"
+        }
+
+        request_data = {
+            'MerchantID': settings.ZARINPAL_MERCHANT_ID,
+            'Amount': rial_total_price // 10,
+            'Description': f'#{order.id}: {customer.first_name} {customer.last_name}',
+            'CallbackURL': 'http://127.0.0.1:8000',
+        }
+
+        res = requests.post(url=settings.ZARINPAL_REQUEST_URL, data=json.dumps(request_data), headers=request_header)
+        data = res.json()
+        authority = data['Authority']
+        
+        order.zarinpal_authority = authority
+        order.save(update_fields=['zarinpal_authority'])
+
+        if 'errors' not in data or len(data['errors']) == 0:
+            return redirect(f'https://sandbox.zarinpal.com/pg/StartPay/{authority}')
+        else:
+            return Response({'detail': _('Error from zarinpal.')})
+

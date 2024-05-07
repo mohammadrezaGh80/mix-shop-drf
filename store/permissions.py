@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.utils.translation import gettext as _
 
-from .models import Seller, Product
+from .models import Order, Seller, Product
 
 
 class IsCustomerOrSeller(permissions.BasePermission):
@@ -133,3 +133,20 @@ class IsCustomerInfoComplete(permissions.BasePermission):
             if not getattr(customer, field, False):
                 raise PermissionDenied(detail=_('To register an order, you must first complete your personal information in your profile.'))
         return True
+
+
+class IsCustomerOwner(permissions.BasePermission):
+    order = None
+
+    def has_permission(self, request, view):
+        try:
+            order_pk = int(request.query_params.get('order_id'))
+        except (ValueError, TypeError):
+            raise Http404
+
+        if (not IsCustomerOwner.order) or \
+        (IsCustomerOwner.order and IsCustomerOwner.order.pk != order_pk):
+            IsCustomerOwner.order = get_object_or_404(Order, pk=order_pk)
+
+        return bool(IsCustomerOwner.order.customer == request.user.customer)
+        

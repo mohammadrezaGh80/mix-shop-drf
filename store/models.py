@@ -379,9 +379,18 @@ class Order(models.Model):
     status = models.CharField(max_length=1, choices=ORDER_STATUS, default=ORDER_STATUS_UNPAID, verbose_name=_("Status"))
     address = models.ForeignKey(Address, on_delete=models.PROTECT, related_name="orders", verbose_name=_("Address"))
 
+    zarinpal_authority = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal authority"))
+
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     delivery_date = models.DateField(verbose_name=_("Delivery date"))
 
+    def get_total_price(self):
+        total_price = 0
+
+        for item in self.items.select_related('product'):
+            total_price += item.product.price * item.quantity
+        
+        return total_price
 
     def __str__(self):
         return f"Order {self.id}"
