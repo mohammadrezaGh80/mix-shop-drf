@@ -107,7 +107,7 @@ class SellerMeProductFilter(django_filters.FilterSet):
         return queryset.filter(**filter_condition)
     
     class Meta:
-        model = Seller
+        model = Product
         fields = []
 
 
@@ -119,8 +119,7 @@ class ProductFilter(SellerMeProductFilter):
         fields = []
 
 
-class OrderFilter(django_filters.FilterSet):
-
+class OrderMeFilter(django_filters.FilterSet):
     ORDER_STATUS_PAID = "p"
     ORDER_STATUS_UNPAID = "u"
     ORDER_STATUS_CANCELED = "c"
@@ -131,8 +130,6 @@ class OrderFilter(django_filters.FilterSet):
     ]
 
     status = django_filters.ChoiceFilter(field_name='status', choices=ORDER_STATUS, method='filter_status', label='status')
-    customer = django_filters.NumberFilter(field_name='customer', lookup_expr='exact', label='customer')
-    delivery_date = django_filters.DateFromToRangeFilter(field_name='delivery_date', lookup_expr='in', label='delivery_date')
 
     def filter_status(self, queryset, field_name, value):
         if value == self.ORDER_STATUS_UNPAID:
@@ -144,6 +141,15 @@ class OrderFilter(django_filters.FilterSet):
         elif value == self.ORDER_STATUS_PAID:
             filter_condition = {field_name: self.ORDER_STATUS_PAID}
             return queryset.filter(**filter_condition)
+        
+    class Meta:
+        model = Order
+        fields = []
+
+
+class OrderFilter(OrderMeFilter):
+    customer = django_filters.NumberFilter(field_name='customer', lookup_expr='exact', label='customer')
+    delivery_date = django_filters.DateFromToRangeFilter(field_name='delivery_date', lookup_expr='in', label='delivery_date')
     
     class Meta:
         model = Order

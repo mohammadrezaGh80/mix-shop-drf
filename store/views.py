@@ -20,7 +20,7 @@ import requests
 from . import serializers
 from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller
 from .paginations import CustomLimitOffsetPagination
-from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter
+from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter, OrderMeFilter
 from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete, IsOrderOwner
 from .ordering import ProductOrderingFilter
 
@@ -670,6 +670,9 @@ class OrderViewSet(ModelViewSet):
 
 class OrderMeViewSet(ModelViewSet):
     http_method_names = ['get', 'options', 'head', 'patch', 'delete']
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = OrderMeFilter
+    pagination_class = CustomLimitOffsetPagination
 
     def get_queryset(self):
         customer = self.request.user.customer

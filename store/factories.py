@@ -94,7 +94,7 @@ class ProductFactory(DjangoModelFactory):
         nb_sentences=5,
         variable_nb_sentences=True
     )
-    price = factory.LazyFunction(lambda: random.randint(100, 99999900) * 10)
+    price = factory.LazyFunction(lambda: random.randint(10000, 99999900) * 10 if random.random() >= 0.7 else random.randint(10000, 49999900) * 10)
     inventory = factory.LazyFunction(lambda: random.randint(1, 100))
 
 

@@ -114,6 +114,7 @@ class SellerAdmin(admin.ModelAdmin):
     list_per_page = 10
     list_filter = [GenderFilter]
     autocomplete_fields = ['user']
+    search_fields = ['company_name']
 
     def get_queryset(self, request):
         return super().get_queryset(request)\
@@ -183,7 +184,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'slug', 'category', 'seller', 'price', 'inventory', 'num_of_comments', 'viewer', 'created_datetime']
     list_per_page = 15
     list_filter = [InventoryFilter]
-    autocomplete_fields = ['category']
+    autocomplete_fields = ['category', 'seller']
     prepopulated_fields = {
         'slug': ['title']
     }
