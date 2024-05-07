@@ -132,7 +132,7 @@ class OrderFactory(DjangoModelFactory):
     class Meta:
         model = models.Order
     
-    status = factory.LazyFunction(lambda: random.choice([models.Order.ORDER_STATUS_CANCELED, models.Order.ORDER_STATUS_PAID]))
+    status = factory.LazyFunction(lambda: random.choice([models.Order.ORDER_STATUS_CANCELED, models.Order.ORDER_STATUS_UNPAID]))
     delivery_date = factory.LazyAttribute(lambda obj: obj.created_datetime.date() + timedelta(days=random.choice([3, 4, 5])))
 
 

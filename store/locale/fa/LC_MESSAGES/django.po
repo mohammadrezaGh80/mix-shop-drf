@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-07 10:47+0330\n"
-"PO-Revision-Date: 2024-05-07 10:49+0330\n"
+"POT-Creation-Date: 2024-05-07 12:22+0330\n"
+"PO-Revision-Date: 2024-05-07 12:25+0330\n"
 "Last-Translator: Anonymous User <None>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -217,7 +217,7 @@ msgid "Viewer"
 msgstr "بیننده"
 
 #: models.py:168 models.py:257 models.py:294 models.py:321 models.py:341
-#: models.py:384
+#: models.py:385
 msgid "Created datetime"
 msgstr "تاریخ و زمان ایجاد شده"
 
@@ -362,7 +362,12 @@ msgstr "کالاهای سبد خرید"
 msgid "Zarinpal authority"
 msgstr "شناسه مرجع درخواست زرین پال"
 
-#: models.py:385
+#: models.py:383
+#| msgid "Zarinpal authority"
+msgid "Zarinpal ref_id"
+msgstr "شناسه تراكنش پرداخت زرین پال"
+
+#: models.py:386
 msgid "Delivery date"
 msgstr "تاریخ تحویل"
 
@@ -485,69 +490,85 @@ msgstr ""
 "یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1"
 " تا 9 شروع می شود."
 
-#: views.py:112
+#: views.py:114
 msgid "Your request has been successfully registered."
 msgstr "درخواست شما با موفقیت ثبت شد."
 
-#: views.py:140
+#: views.py:142
 msgid "There is some products relating this seller, Please remove them first."
 msgstr ""
 "برخی از محصولات مربوط به این فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:163
+#: views.py:165
 msgid "There is some products relating to you, Please remove them first."
 msgstr "برخی از محصولات مربوط به شما هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:281
+#: views.py:283
 msgid ""
 "There is some products relating this category, Please remove them first."
 msgstr ""
 "برخی از محصولات مربوط به این دسته بندی هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:338
+#: views.py:340
 msgid ""
 "There is some order items relating this product, Please remove them first."
 msgstr ""
 "برخی از کالاهای سفارش مربوط به این محصول هستند، لطفاً ابتدا آنها را حذف "
 "کنید."
 
-#: views.py:461 views.py:502
+#: views.py:463 views.py:504
 #, python-format
 msgid ""
 "There isn't comment with id=%(comment_id)d in the %(product_title)s product."
 msgstr "نظری با شناسه %(comment_id)d در محصول %(product_title)s وجود ندارد."
 
-#: views.py:464
+#: views.py:466
 msgid "A comment that is a reply cannot be liked."
 msgstr "نظری که یک پاسخ است نمی تواند موافقت شود."
 
-#: views.py:480
+#: views.py:482
 msgid "The comment like was removed."
 msgstr "موافقت نظر حذف شد."
 
-#: views.py:484
+#: views.py:486
 msgid "The comment was successfully liked."
 msgstr "نظر با موفقیت موافقت شد."
 
-#: views.py:505
+#: views.py:507
 msgid "A comment that is a reply cannot be disliked."
 msgstr "نظری که یک پاسخ است نمی تواند مخالفت شود."
 
-#: views.py:521
+#: views.py:523
 msgid "The comment dislike was removed."
 msgstr "مخالفت نظر حذف شد."
 
-#: views.py:525
+#: views.py:527
 msgid "The comment was successfully disliked."
 msgstr "نظر با موفقیت مخالفت شد."
 
-#: views.py:738
+#: views.py:740
 msgid "The cart is empty."
 msgstr "سبد خرید خالی است."
 
-#: views.py:777
+#: views.py:778
 msgid "Error from zarinpal."
 msgstr "خطا از طرف زرین پال."
+
+#: views.py:813
+#| msgid "Your request has been successfully registered."
+msgid "Your payment has been successfully complete."
+msgstr "پرداخت شما با موفقیت انجام شد."
+
+#: views.py:815
+#| msgid "Your request has been successfully registered."
+msgid ""
+"Your payment has been successfully complete and has already been register."
+msgstr "پرداخت شما با موفقیت انجام شد و قبلا ثبت شده است."
+
+#: views.py:817 views.py:819
+#| msgid "The comment was successfully liked."
+msgid "The payment was unsuccessful."
+msgstr "پرداخت ناموفق بود."
 
 #~ msgid ""
 #~ "Enter a valid phone number, phone number must have 11 digits which starts "

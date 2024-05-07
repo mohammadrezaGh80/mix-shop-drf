@@ -135,7 +135,7 @@ class IsCustomerInfoComplete(permissions.BasePermission):
         return True
 
 
-class IsCustomerOwner(permissions.BasePermission):
+class IsOrderOwner(permissions.BasePermission):
     order = None
 
     def has_permission(self, request, view):
@@ -144,9 +144,9 @@ class IsCustomerOwner(permissions.BasePermission):
         except (ValueError, TypeError):
             raise Http404
 
-        if (not IsCustomerOwner.order) or \
-        (IsCustomerOwner.order and IsCustomerOwner.order.pk != order_pk):
-            IsCustomerOwner.order = get_object_or_404(Order, pk=order_pk)
+        if (not IsOrderOwner.order) or \
+        (IsOrderOwner.order and IsOrderOwner.order.pk != order_pk):
+            IsOrderOwner.order = get_object_or_404(Order, pk=order_pk)
 
-        return bool(IsCustomerOwner.order.customer == request.user.customer)
+        return bool(IsOrderOwner.order.customer == request.user.customer)
         

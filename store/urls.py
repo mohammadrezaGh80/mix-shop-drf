@@ -5,6 +5,7 @@ from rest_framework_nested import routers
 
 from . import views
 
+app_name = 'store'
 
 router = DefaultRouter()
 router.register('customers', views.CustomerViewSet, basename='customer')
@@ -41,5 +42,6 @@ urlpatterns = [
     path('orders/me/<int:pk>/', views.OrderMeViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='order-me-detail'),
     path('carts/<int:cart_pk>/clear/', views.ClearAllCartAPIView.as_view(), name='clear-all-cart'),
     path('carts/me/clear/', views.ClearAllCartAPIView.as_view(), name='clear-all-cart-me'),
-    path('payment/', views.PaymentProcessSandboxAPIView.as_view(), name='payment-process')
+    path('payment/', views.PaymentProcessSandboxAPIView.as_view(), name='payment-process-sandbox'),
+    path('payment/callback/', views.PaymentCallbackSandboxAPIView.as_view(), name='payment-callback-sandbox')
 ] + router.urls + customers_router.urls + sellers_router.urls + products_router.urls + seller_products_router.urls + carts_router.urls

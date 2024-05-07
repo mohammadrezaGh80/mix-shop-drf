@@ -380,6 +380,7 @@ class Order(models.Model):
     address = models.ForeignKey(Address, on_delete=models.PROTECT, related_name="orders", verbose_name=_("Address"))
 
     zarinpal_authority = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal authority"))
+    zarinpal_ref_id = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal ref_id"))
 
     created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
     delivery_date = models.DateField(verbose_name=_("Delivery date"))

@@ -2,13 +2,14 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status as status_code
 from django.http import Http404
 from rest_framework import generics
 from django.db.models import Prefetch
 from django.utils.translation import gettext as _
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.conf import settings
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,7 +21,7 @@ from . import serializers
 from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter
-from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete, IsCustomerOwner
+from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete, IsOrderOwner
 from .ordering import ProductOrderingFilter
 
 
@@ -51,7 +52,7 @@ class CustomerViewSet(ModelViewSet):
 
         if request.method == 'GET':
             serializer = serializers.CustomerDetailSerializer(customer, context=self.get_serializer_context())
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status_code.HTTP_200_OK)
         elif request.method in ['PUT', 'PATCH']:
             partial = False
             if request.method == 'PATCH':
@@ -59,7 +60,7 @@ class CustomerViewSet(ModelViewSet):
             serializer = serializers.CustomerDetailSerializer(customer, data=request.data,  partial=partial, context=self.get_serializer_context())
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status_code.HTTP_200_OK)
         
 
 class AddressCustomerViewSet(ModelViewSet):
@@ -110,7 +111,7 @@ class RequestSellerGenericAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data, context={'request': request, 'user': user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'detail': _('Your request has been successfully registered.')}, status=status.HTTP_200_OK)
+        return Response({'detail': _('Your request has been successfully registered.')}, status=status_code.HTTP_200_OK)
 
 
 class SellerViewSet(ModelViewSet):
@@ -138,10 +139,10 @@ class SellerViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.products.count() > 0:
-            return Response({'detail': _('There is some products relating this seller, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _('There is some products relating this seller, Please remove them first.')}, status=status_code.HTTP_400_BAD_REQUEST)
         
         instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status_code.HTTP_204_NO_CONTENT)
     
     @action(detail=False, methods=['GET', 'PUT', 'PATCH', 'DELETE'], permission_classes=[IsSeller])
     def me(self, request, *args, **kwargs):
@@ -150,7 +151,7 @@ class SellerViewSet(ModelViewSet):
 
         if request.method == 'GET':
             serializer = serializers.SellerDetailSerializer(seller, context=self.get_serializer_context())
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status_code.HTTP_200_OK)
         elif request.method in ['PUT', 'PATCH']:
             partial = False
             if request.method == 'PATCH':
@@ -158,12 +159,12 @@ class SellerViewSet(ModelViewSet):
             serializer = serializers.SellerDetailSerializer(seller, data=request.data,  partial=partial, context=self.get_serializer_context())
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status_code.HTTP_200_OK)
         elif request.method == 'DELETE':
             if seller.products.count() > 0:
-                return Response({'detail': _('There is some products relating to you, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'detail': _('There is some products relating to you, Please remove them first.')}, status=status_code.HTTP_400_BAD_REQUEST)
             seller.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status_code.HTTP_204_NO_CONTENT)
         
 
 class AddressSellerViewSet(ModelViewSet):
@@ -255,7 +256,7 @@ class SellerListRequestsViewSet(ModelViewSet):
         if seller_status == Seller.SELLER_STATUS_REJECTED:
             instance.delete()        
         
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status_code.HTTP_200_OK)
 
 
 class CategoryViewSet(ModelViewSet):
@@ -279,10 +280,10 @@ class CategoryViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.get_products_count_of_category() > 0:
-            return Response({'detail': _('There is some products relating this category, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _('There is some products relating this category, Please remove them first.')}, status=status_code.HTTP_400_BAD_REQUEST)
         
         instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status_code.HTTP_204_NO_CONTENT)
 
 
 class ProductViewSet(ModelViewSet):
@@ -336,17 +337,17 @@ class ProductViewSet(ModelViewSet):
         instance = self.get_object()
 
         if instance.order_items.count() > 0:
-            return Response({'detail': _('There is some order items relating this product, Please remove them first.')}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _('There is some order items relating this product, Please remove them first.')}, status=status_code.HTTP_400_BAD_REQUEST)
         
         instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status_code.HTTP_204_NO_CONTENT)
     
     @action(detail=False, url_path='upload-image', methods=['POST'], permission_classes=[IsAdminUserOrSeller])
     def upload_image(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status_code.HTTP_201_CREATED)
     
 
 class CommentViewSet(ModelViewSet):
@@ -428,7 +429,7 @@ class CommentListWaitingViewSet(ModelViewSet):
         if comment_status == Comment.COMMENT_STATUS_NOT_APPROVED:
             instance.delete()        
         
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status_code.HTTP_200_OK)
 
 
 class ProductImageViewSet(ModelViewSet):
@@ -459,10 +460,10 @@ class CommentLikeAPIView(APIView):
         try:
             comment = Comment.objects.get(id=comment_pk, product_id=product_pk)
         except Comment.DoesNotExist:
-            return Response({'detail': _("There isn't comment with id=%(comment_id)d in the %(product_title)s product.") % {'comment_id': comment_pk, 'product_title': product.title}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _("There isn't comment with id=%(comment_id)d in the %(product_title)s product.") % {'comment_id': comment_pk, 'product_title': product.title}}, status=status_code.HTTP_400_BAD_REQUEST)
         
         if comment.reply_to:
-            return Response({'detail': _('A comment that is a reply cannot be liked.')}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _('A comment that is a reply cannot be liked.')}, status=status_code.HTTP_400_BAD_REQUEST)
         
         user = self.request.user
         if getattr(user, 'seller', False) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
@@ -478,11 +479,11 @@ class CommentLikeAPIView(APIView):
 
         if queryset.exists():
             queryset.first().delete()
-            return Response({'detail': _('The comment like was removed.')}, status=status.HTTP_200_OK)
+            return Response({'detail': _('The comment like was removed.')}, status=status_code.HTTP_200_OK)
         else:
             CommentLike.objects.create(content_object=user_type, comment_id=comment_pk)
 
-        return Response({'detail': _('The comment was successfully liked.')}, status=status.HTTP_201_CREATED)
+        return Response({'detail': _('The comment was successfully liked.')}, status=status_code.HTTP_201_CREATED)
 
 
 class CommentDisLikeAPIView(APIView):
@@ -500,10 +501,10 @@ class CommentDisLikeAPIView(APIView):
         try:
             comment = Comment.objects.get(id=comment_pk, product_id=product_pk)
         except Comment.DoesNotExist:
-            return Response({'detail': _("There isn't comment with id=%(comment_id)d in the %(product_title)s product.") % {'comment_id': comment_pk, 'product_title': product.title}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _("There isn't comment with id=%(comment_id)d in the %(product_title)s product.") % {'comment_id': comment_pk, 'product_title': product.title}}, status=status_code.HTTP_400_BAD_REQUEST)
         
         if comment.reply_to:
-            return Response({'detail': _('A comment that is a reply cannot be disliked.')}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _('A comment that is a reply cannot be disliked.')}, status=status_code.HTTP_400_BAD_REQUEST)
         
         user = self.request.user
         if getattr(user, 'seller', False) and user.seller.status == Seller.SELLER_STATUS_ACCEPTED:
@@ -519,11 +520,11 @@ class CommentDisLikeAPIView(APIView):
 
         if queryset.exists():
             queryset.first().delete()
-            return Response({'detail': _('The comment dislike was removed.')}, status=status.HTTP_200_OK)
+            return Response({'detail': _('The comment dislike was removed.')}, status=status_code.HTTP_200_OK)
         else:
             CommentDislike.objects.create(content_object=user_type, comment_id=comment_pk)
 
-        return Response({'detail': _('The comment was successfully disliked.')}, status=status.HTTP_201_CREATED)
+        return Response({'detail': _('The comment was successfully disliked.')}, status=status_code.HTTP_201_CREATED)
 
 
 class CartViewSet(ModelViewSet):
@@ -560,7 +561,7 @@ class CartViewSet(ModelViewSet):
         cart = queryset.get(customer_id=customer.id)
 
         serializer = serializers.CartDetailSerializer(cart)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status_code.HTTP_200_OK)
 
 
 class CartItemViewset(ModelViewSet):
@@ -642,7 +643,7 @@ class OrderViewSet(ModelViewSet):
         created_order = self.get_queryset().get(id=created_order.pk)
 
         serializer = serializers.OrderDetailSerializer(created_order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status_code.HTTP_201_CREATED)
     
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -664,7 +665,7 @@ class OrderViewSet(ModelViewSet):
 
         OrderItem.objects.bulk_update(order_items, fields=['price'])
 
-        return Response(serializer.data, status=status.HTTP_200_OK)        
+        return Response(serializer.data, status=status_code.HTTP_200_OK)        
 
 
 class OrderMeViewSet(ModelViewSet):
@@ -714,7 +715,7 @@ class OrderMeViewSet(ModelViewSet):
 
         OrderItem.objects.bulk_update(order_items, fields=['price'])
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status_code.HTTP_200_OK)
 
 
 class ClearAllCartAPIView(APIView):
@@ -736,19 +737,19 @@ class ClearAllCartAPIView(APIView):
             cart = Cart.objects.get(customer_id=customer.id)
         
         if cart.items.count() == 0:
-            return Response({'detail': _('The cart is empty.')}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _('The cart is empty.')}, status=status_code.HTTP_400_BAD_REQUEST)
 
         cart.items.all().delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status_code.HTTP_204_NO_CONTENT)
 
 
 class PaymentProcessSandboxAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsCustomerOwner]
+    permission_classes = [IsAuthenticated, IsOrderOwner]
 
     def get(self, request, *args, **kwargs):
         customer = request.user.customer
         order_id = request.query_params.get('order_id')
-        order = get_object_or_404(Order, id=order_id)
+        order = get_object_or_404(Order, id=order_id, status=Order.ORDER_STATUS_UNPAID)
 
         rial_total_price = order.get_total_price()
 
@@ -761,7 +762,7 @@ class PaymentProcessSandboxAPIView(APIView):
             'MerchantID': settings.ZARINPAL_MERCHANT_ID,
             'Amount': rial_total_price // 10,
             'Description': f'#{order.id}: {customer.first_name} {customer.last_name}',
-            'CallbackURL': 'http://127.0.0.1:8000',
+            'CallbackURL': request.build_absolute_uri(reverse('store:payment-callback-sandbox')),
         }
 
         res = requests.post(url=settings.ZARINPAL_REQUEST_URL, data=json.dumps(request_data), headers=request_header)
@@ -774,5 +775,44 @@ class PaymentProcessSandboxAPIView(APIView):
         if 'errors' not in data or len(data['errors']) == 0:
             return redirect(f'https://sandbox.zarinpal.com/pg/StartPay/{authority}')
         else:
-            return Response({'detail': _('Error from zarinpal.')})
+            return Response({'detail': _('Error from zarinpal.')}, status=status_code.HTTP_400_BAD_REQUEST)
 
+
+class PaymentCallbackSandboxAPIView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        status = request.query_params.get('Status')
+        authority = request.query_params.get('Authority')
+
+        order = get_object_or_404(Order, zarinpal_authority=authority)
+
+        if status == 'OK':
+            rial_total_price = order.get_total_price()
+
+            request_header = {
+                "accept": "application/json",
+                "content-type": "application/json"
+            }
+
+            request_data = {
+                'MerchantID': settings.ZARINPAL_MERCHANT_ID,
+                'Amount': rial_total_price // 10,
+                'Authority': authority,
+            }
+
+            res = requests.post(url=settings.ZARINPAL_VERIFY_URL, data=json.dumps(request_data), headers=request_header)
+            data = res.json()
+            payment_status = data['Status']
+
+            if payment_status == 100:
+                order.status = Order.ORDER_STATUS_PAID
+                order.zarinpal_ref_id = data['RefID']
+                order.save(update_fields=['status', 'zarinpal_ref_id'])
+
+                return Response({'detail': _('Your payment has been successfully complete.')}, status=status_code.HTTP_200_OK)
+            elif payment_status == 101:
+                return Response({'detail': _('Your payment has been successfully complete and has already been register.')}, status=status_code.HTTP_200_OK)
+            else:
+                return Response({'detail': _('The payment was unsuccessful.')}, status=status_code.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'detail': _('The payment was unsuccessful.')}, status=status_code.HTTP_400_BAD_REQUEST)

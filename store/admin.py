@@ -288,7 +288,7 @@ class CartItemAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['customer', 'status', 'zarinpal_authority', 'created_datetime', 'delivery_date']
+    list_display = ['customer', 'status', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime', 'delivery_date']
     list_select_related = ['customer']
     search_fields = ['id']
     list_per_page = 15
