@@ -649,7 +649,6 @@ class OrderViewSet(ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        print(serializer.validated_data)
         order_status = serializer.validated_data.get('status')
         serializer.save()
 

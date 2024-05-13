@@ -435,13 +435,19 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     images = ProductImageSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
+    average_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'title','slug' ,'category', 'images', 'seller' ,'price', 'status', 'inventory', 'description', 'viewer', 'specifications', 'comments']
+        fields = ['id', 'title','slug' ,'category', 'images', 'seller' ,'price', 'status', 'inventory', 'description', 'viewer', 'specifications', 'average_rating', 'comments']
 
     def get_status(self, product):
         return 'Available' if product.inventory > 0 else 'Unavailable'
+    
+    def get_average_rating(self, product):
+        queryset = Comment.objects.filter(product=product, status=Comment.COMMENT_STATUS_APPROVED)
+        
+        return round(sum([comment.rating for comment in queryset]) / queryset.count(), 1)
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
