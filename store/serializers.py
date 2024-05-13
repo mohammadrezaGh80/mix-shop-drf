@@ -446,8 +446,10 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     
     def get_average_rating(self, product):
         queryset = Comment.objects.filter(product=product, status=Comment.COMMENT_STATUS_APPROVED)
-        
-        return round(sum([comment.rating for comment in queryset]) / queryset.count(), 1)
+
+        if queryset.exists():
+            return round(sum([comment.rating for comment in queryset]) / queryset.count(), 1)
+        return 0
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
@@ -499,12 +501,11 @@ class ProductCreateSerializer(serializers.ModelSerializer):
 
 class ProductUpdateSerializer(serializers.ModelSerializer):
     slug = serializers.SlugField(read_only=True)
-    images = ProductImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'slug', 'category', 'images',
-                  'price', 'inventory', 'description', 'specifications']
+        fields = ['id', 'title', 'slug', 'category', 'price', 
+                  'inventory', 'description', 'specifications']
     
     def validate_specifications(self, specifications):
         if isinstance(specifications, NoneType):

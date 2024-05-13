@@ -3,7 +3,7 @@ from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
 
 
-from .models import Customer, Seller, Cart, Order, OrderItem
+from .models import CartItem, Customer, Seller, Cart, Order, OrderItem, Product
 from core.signals import superuser_created, add_user_to_staff, remove_users_from_staff
 
 User = get_user_model()
@@ -159,3 +159,27 @@ def change_price_order_items_based_on_change_status_order(sender, instance, **kw
                     order_items.append(order_item)
 
             OrderItem.objects.bulk_update(order_items, fields=['price'])
+
+
+@receiver(pre_save, sender=Product)
+def manage_product_in_cart_items_based_on_change_product_inventory(sender, instance, **kwargs):
+    if instance.id:
+        previous_instance = Product.objects.get(id=instance.id)
+        if instance.inventory < previous_instance.inventory:
+            cart_items_queryset = CartItem.objects.filter(product=instance)
+            
+            for cart_item in cart_items_queryset:
+                if cart_item.quantity > instance.inventory:
+                    cart_item.delete()
+
+
+@receiver(pre_save, sender=Product)
+def manage_product_in_order_items_based_on_change_product_inventory(sender, instance, **kwargs):
+    if instance.id:
+        previous_instance = Product.objects.get(id=instance.id)
+        if instance.inventory < previous_instance.inventory:
+            order_items_queryset = OrderItem.objects.filter(product=instance, order__status__in=[Order.ORDER_STATUS_UNPAID, Order.ORDER_STATUS_CANCELED])
+            
+            for order_item in order_items_queryset:
+                if order_item.quantity > instance.inventory:
+                    order_item.delete()
