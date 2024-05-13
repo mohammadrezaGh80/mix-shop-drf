@@ -294,6 +294,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['customer', 'status', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime', 'delivery_date']
     list_select_related = ['customer']
     search_fields = ['id']
+    autocomplete_fields = ['customer']
     list_per_page = 15
 
 

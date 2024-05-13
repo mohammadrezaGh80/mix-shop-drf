@@ -183,3 +183,22 @@ def manage_product_in_order_items_based_on_change_product_inventory(sender, inst
             for order_item in order_items_queryset:
                 if order_item.quantity > instance.inventory:
                     order_item.delete()
+
+
+@receiver(pre_save, sender=Order)
+def change_products_inventory_based_on_change_order_status(sender, instance, **kwargs):
+    if instance.id:
+        previous_instance = Order.objects.get(id=instance.id)
+
+        if previous_instance.status in [Order.ORDER_STATUS_UNPAID, Order.ORDER_STATUS_CANCELED] and instance.status == Order.ORDER_STATUS_PAID:
+            products = []
+            for order_item in instance.items.select_related('product'):
+                order_item.product.inventory -= order_item.quantity
+                products.append(order_item.product)
+            Product.objects.bulk_update(products, fields=['inventory'])
+        elif previous_instance.status == Order.ORDER_STATUS_PAID and instance.status in [Order.ORDER_STATUS_UNPAID, Order.ORDER_STATUS_CANCELED]:
+            products = []
+            for order_item in instance.items.select_related('product'):
+                order_item.product.inventory += order_item.quantity
+                products.append(order_item.product)
+            Product.objects.bulk_update(products, fields=['inventory'])
