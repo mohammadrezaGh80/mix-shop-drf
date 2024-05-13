@@ -617,13 +617,12 @@ class CartItemCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"detail": _("This product is exist in the customer's cart.")})
 
     def validate(self, attrs):
-        product = attrs.get('product')
-        quantity = attrs.get('quantity')
-
-        if quantity > product.inventory:
-            raise serializers.ValidationError(
-                {"detail": _("You can't add product more than product's inventory(%(product_quantity)d) to your cart.") % {'product_quantity': product.inventory}}
-            )
+        instance = CartItem(**attrs)
+        
+        try:
+            instance.clean()
+        except ValidationError as e:
+            raise serializers.ValidationError({"detail": e.messages})
 
         return super().validate(attrs)
     

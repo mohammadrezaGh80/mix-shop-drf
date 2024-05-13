@@ -190,6 +190,7 @@ class ProductAdmin(admin.ModelAdmin):
     }
     search_fields = ['title']
     readonly_fields = ['viewer']
+    ordering = ['-created_datetime']
 
     def get_queryset(self, request):
         return super().get_queryset(request)\
@@ -273,6 +274,7 @@ class CartAdmin(admin.ModelAdmin):
     search_fields = ['id']
     autocomplete_fields = ['customer']
     list_per_page = 15
+    ordering = ['-created_datetime']
 
     @admin.display(description=_('phone'))
     def get_phone(self, cart):

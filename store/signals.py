@@ -150,11 +150,11 @@ def change_price_order_items_based_on_change_status_order(sender, instance, **kw
         if instance.status != previous_instance.status:
             order_items = []
             if instance.status == Order.ORDER_STATUS_PAID:
-                for order_item in instance.items.all():
+                for order_item in instance.items.select_related('product'):
                     order_item.price = order_item.product.price
                     order_items.append(order_item)
             else:
-                for order_item in instance.items.all():
+                for order_item in instance.items.select_related('product'):
                     order_item.price = None
                     order_items.append(order_item)
 

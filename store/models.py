@@ -354,6 +354,12 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="cart_items", verbose_name=_("Product"))
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
 
+    def clean(self):
+        super().clean()
+        
+        if self.quantity > self.product.inventory:
+            raise ValidationError(_("You can't add product more than product's inventory(%(product_quantity)d) to cart.") % {'product_quantity': self.product.inventory})
+
     def __str__(self):
         return f"Cart(id: {self.id}): {self.product} x {self.quantity}" # TODO: show proper string
     
@@ -391,7 +397,7 @@ class Order(models.Model):
         for item in self.items.select_related('product'):
             total_price += item.product.price * item.quantity
         
-        return total_price
+        return total_price 
 
     def __str__(self):
         return f"Order {self.id}"
@@ -407,6 +413,11 @@ class OrderItem(models.Model):
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name=_("Quantity"))
     price = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("Price"))
 
+    def clean(self):
+        super().clean()
+        
+        if self.quantity > self.product.inventory:
+            raise ValidationError(_("You can't add product more than product's inventory(%(product_quantity)d) to order.") % {'product_quantity': self.product.inventory})
 
     def __str__(self):
         return f"Order item(id: {self.id}): {self.product} x {self.quantity}"
