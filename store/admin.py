@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from django.db.models import Count
+from django.db.models import Count, Case, When, Sum, Value
 from django.urls import reverse
 from django.utils.http import urlencode
 from django.utils.html import format_html
@@ -181,7 +181,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'slug', 'category', 'seller', 'price', 'inventory', 'num_of_comments', 'viewer', 'created_datetime']
+    list_display = ['title', 'slug', 'category', 'seller', 'price', 'inventory', 'num_of_comments', 'num_of_sales', 'viewer', 'created_datetime']
     list_per_page = 15
     list_filter = [InventoryFilter]
     autocomplete_fields = ['category', 'seller']
@@ -195,7 +195,9 @@ class ProductAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request)\
             .prefetch_related('comments')\
-            .annotate(comments_count=Count('comments'))
+            .annotate(comments_count=Count('comments', distinct=True),
+                      sales_count=Case(When(order_items__order__status=Order.ORDER_STATUS_PAID, then=Sum('order_items__quantity', distinct=True)),
+                                       default=Value(0)))
 
     @admin.display(description='# comments', ordering='comments_count')
     def num_of_comments(self, product):
@@ -207,7 +209,11 @@ class ProductAdmin(admin.ModelAdmin):
             })
         )
 
-        return format_html('<a href={}>{}</a>', url, product.comments.count())
+        return format_html('<a href={}>{}</a>', url, product.comments_count)
+    
+    @admin.display(description='# sales', ordering='sales_count')
+    def num_of_sales(self, product):
+        return product.sales_count
 
 
 @admin.register(Address)
@@ -291,11 +297,26 @@ class CartItemAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['customer', 'status', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime', 'delivery_date']
+    list_display = ['customer', 'status', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime', 'delivery_date', 'num_of_items']
     list_select_related = ['customer']
     search_fields = ['id']
     autocomplete_fields = ['customer']
     list_per_page = 15
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(items_count=Count('items'))
+    
+    @admin.display(description='# items', ordering='items_count')
+    def num_of_items(self, order):
+        url = (
+            reverse('admin:store_orderitem_changelist')
+            + '?'
+            + urlencode({
+                'order': order.id
+            })
+        )
+
+        return format_html('<a href={}>{}</a>', url, order.items_count)
 
 
 @admin.register(OrderItem)

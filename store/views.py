@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status as status_code
 from django.http import Http404
 from rest_framework import generics
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Case, When, Value, Count, Sum
 from django.utils.translation import gettext as _
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404, redirect
@@ -287,15 +287,18 @@ class CategoryViewSet(ModelViewSet):
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.select_related('seller').select_related('category').order_by('-created_datetime')
+    queryset = Product.objects.select_related('seller').select_related('category').annotate(
+                    sales_count=Case(When(order_items__order__status=Order.ORDER_STATUS_PAID, then=Sum('order_items__quantity')),
+                                     default=Value(0))
+                ).order_by('-created_datetime')
     pagination_class = CustomLimitOffsetPagination
     filter_backends = [DjangoFilterBackend, ProductOrderingFilter]
     filterset_class = ProductFilter
-    ordering_fields = ['price', 'inventory', 'created_datetime', 'viewer']
+    ordering_fields = ['price', 'inventory', 'created_datetime', 'viewer', 'sales_count']
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        
+
         if self.action == 'list':
             return queryset.prefetch_related(
                 Prefetch('images', to_attr="product_images")

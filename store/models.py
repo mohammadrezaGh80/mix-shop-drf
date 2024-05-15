@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 import os
 from PIL import Image, ImageChops
 from mptt.models import TreeForeignKey, MPTTModel
+from datetime import date, timedelta
 
 from .validators import PostalCodeValidator, NationalCodeValidator
 
@@ -398,6 +399,31 @@ class Order(models.Model):
             total_price += item.product.price * item.quantity
         
         return total_price 
+    
+    def clean(self):
+        super().clean()
+
+        fields = ['first_name', 'last_name', 'birth_date', 'gender']
+
+        for field in fields:
+            if not getattr(self.customer, field, False):
+                raise ValidationError(_("To register an order, you must first complete the customer's personal information with ID=%(customer_id)d.") % {'customer_id': self.customer.id})
+
+        if not self.address.content_object == self.customer:
+            raise ValidationError(_("The address with id=%(address_id)d doesn't belong to customer with ID=%(customer_id)d.")  % {'address_id': self.address.id, 'customer_id': self.customer.id})
+
+        today = date.today()
+        next_day = today + timedelta(days=3)
+        valid_dates = []
+
+        for i in range(3):
+            if next_day.weekday() == 4:
+                next_day = next_day + timedelta(days=1)
+            valid_dates.append(next_day)
+            next_day = next_day + timedelta(days=1)
+
+        if self.delivery_date not in valid_dates:
+            raise ValidationError(_("It's not possible to deliver the order on the selected day(Valid dates: %(valid_dates)s).") % {"valid_dates": ", ".join([date.strftime("%d-%m-%Y") for date in valid_dates])})
 
     def __str__(self):
         return f"Order {self.id}"
