@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status as status_code
 from django.http import Http404
 from rest_framework import generics
-from django.db.models import Prefetch, Case, When, Value, Count, Sum
+from django.db.models import Prefetch, Case, When, Value, Sum
 from django.utils.translation import gettext as _
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404, redirect
@@ -14,8 +14,6 @@ from django.conf import settings
 
 from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
-import json
-import requests
 
 from . import serializers
 from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller
@@ -23,6 +21,7 @@ from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter, OrderMeFilter
 from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete, IsOrderOwner
 from .ordering import ProductOrderingFilter
+from .payment import ZarinpalSandbox
 
 
 class CustomerViewSet(ModelViewSet):
@@ -210,12 +209,15 @@ class SellerMeProductViewSet(ModelViewSet):
     pagination_class = CustomLimitOffsetPagination
     filter_backends = [DjangoFilterBackend, ProductOrderingFilter]
     filterset_class = SellerMeProductFilter
-    ordering_fields = ['price', 'inventory', 'created_datetime', 'viewer']
+    ordering_fields = ['price', 'inventory', 'created_datetime', 'viewer', 'sales_count']
 
     def get_queryset(self):
         seller = self.request.user.seller
 
-        queryset = Product.objects.filter(seller=seller).select_related('category').order_by('-created_datetime')
+        queryset = Product.objects.filter(seller=seller).select_related('category').annotate(
+                    sales_count=Case(When(order_items__order__status=Order.ORDER_STATUS_PAID, then=Sum('order_items__quantity')),
+                                     default=Value(0))
+                ).order_by('-created_datetime')
 
         if self.action == 'list':
             return queryset.prefetch_related(
@@ -736,7 +738,7 @@ class ClearAllCartAPIView(APIView):
         cart_pk = self.kwargs.get('cart_pk')
         
         if cart_pk:
-            cart = Cart.objects.get(id=cart_pk)
+            cart = get_object_or_404(Cart, id=cart_pk)
         else:    
             customer = request.user.customer
             cart = Cart.objects.get(customer_id=customer.id)
@@ -758,27 +760,20 @@ class PaymentProcessSandboxAPIView(APIView):
 
         rial_total_price = order.get_total_price()
 
-        request_header = {
-            "accept": "application/json",
-            "content-type": "application/json"
-        }
+        zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
+        data = zarinpal_sandbox.payment_request(
+            rial_total_price=rial_total_price, 
+            description=f'#{order.id}: {customer.first_name} {customer.last_name}',
+            callback_url=request.build_absolute_uri(reverse('store:payment-callback-sandbox'))
+        )
 
-        request_data = {
-            'MerchantID': settings.ZARINPAL_MERCHANT_ID,
-            'Amount': rial_total_price // 10,
-            'Description': f'#{order.id}: {customer.first_name} {customer.last_name}',
-            'CallbackURL': request.build_absolute_uri(reverse('store:payment-callback-sandbox')),
-        }
-
-        res = requests.post(url=settings.ZARINPAL_REQUEST_URL, data=json.dumps(request_data), headers=request_header)
-        data = res.json()
         authority = data['Authority']
         
         order.zarinpal_authority = authority
         order.save(update_fields=['zarinpal_authority'])
 
         if 'errors' not in data or len(data['errors']) == 0:
-            return redirect(f'https://sandbox.zarinpal.com/pg/StartPay/{authority}')
+            return redirect(zarinpal_sandbox.generate_payment_page_url(authority=authority))
         else:
             return Response({'detail': _('Error from zarinpal.')}, status=status_code.HTTP_400_BAD_REQUEST)
 
@@ -794,19 +789,12 @@ class PaymentCallbackSandboxAPIView(APIView):
         if status == 'OK':
             rial_total_price = order.get_total_price()
 
-            request_header = {
-                "accept": "application/json",
-                "content-type": "application/json"
-            }
-
-            request_data = {
-                'MerchantID': settings.ZARINPAL_MERCHANT_ID,
-                'Amount': rial_total_price // 10,
-                'Authority': authority,
-            }
-
-            res = requests.post(url=settings.ZARINPAL_VERIFY_URL, data=json.dumps(request_data), headers=request_header)
-            data = res.json()
+            zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
+            data = zarinpal_sandbox.payment_verify(
+                rial_total_price=rial_total_price, 
+                authority=authority
+            )
+            
             payment_status = data['Status']
 
             if payment_status == 100:
