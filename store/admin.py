@@ -7,7 +7,7 @@ from django.utils.html import format_html
 
 from datetime import date
 
-from .models import Customer, Seller, Category, Product, Address, Comment, Cart, CartItem, Order, OrderItem, Person, ProductImage, CommentLike, CommentDislike
+from .models import Customer, IncreaseWalletCredit, Seller, Category, Product, Address, Comment, Cart, CartItem, Order, OrderItem, Person, ProductImage, CommentLike, CommentDislike
 
 
 # Custom filters
@@ -166,7 +166,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
         return format_html('<a href={}>{}</a>', url, category.sub_categories_count)
     
-    @admin.display(description="# products")
+    @admin.display(description='# products')
     def num_of_products(self, category):
         url = (
             reverse('admin:store_product_changelist')
@@ -363,3 +363,11 @@ class CommentDislikeAdmin(admin.ModelAdmin):
     @admin.display(description='user')
     def get_content_object(self, comment):
         return comment.content_object
+
+
+@admin.register(IncreaseWalletCredit)
+class IncreaseWalletCreditAdmin(admin.ModelAdmin):
+    list_display = ['customer', 'amount', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime']
+    autocomplete_fields = ['customer']
+    list_select_related = ['customer']
+    list_per_page = 15

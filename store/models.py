@@ -87,6 +87,29 @@ class Customer(Person):
         verbose_name_plural = _("Customers")
 
 
+class IncreaseWalletCredit(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="increase_wallet_credits", verbose_name=_("Customer"))
+    amount = models.PositiveIntegerField(verbose_name=_("Amount"))
+
+    zarinpal_authority = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal authority"))
+    zarinpal_ref_id = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal ref_id"))
+
+    created_datetime = models.DateTimeField(auto_now_add=True, verbose_name=_("Created datetime"))
+
+    def clean(self):
+        super().clean()
+
+        if self.amount < 10000:
+            raise ValidationError(_("The amount is invalid."))
+
+    def __str__(self):
+        return f"+{self.amount} Rials to {self.customer}'s wallet"
+
+    class Meta:
+        verbose_name = _("Increase wallet credit")
+        verbose_name_plural = _("Increase wallet credits")
+
+
 class Seller(Person):
     SELLER_STATUS_WAITING = "w"
     SELLER_STATUS_ACCEPTED = "a"
