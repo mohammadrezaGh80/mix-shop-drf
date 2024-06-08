@@ -1,4 +1,6 @@
+from typing import Any
 from django.contrib import admin
+from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Count, Case, When, Sum, Value
 from django.urls import reverse
@@ -57,6 +59,26 @@ class InventoryFilter(admin.SimpleListFilter):
             return queryset.filter(inventory__range=(5, 10))
         elif self.value() == self.INVENTORY_GREATER_THAN_TEN:
             return queryset.filter(inventory__gt=10)
+        
+
+class IsPaidFilter(admin.SimpleListFilter):
+    title = 'is paid status'
+    parameter_name = 'is_paid'
+
+    IS_PAID_TRUE = '1'
+    IS_PAID_FALSE = '0'
+
+    def lookups(self, request, model_admin):
+        return [
+            (self.IS_PAID_TRUE, _('True')),
+            (self.IS_PAID_FALSE, _('False'))
+        ]
+    
+    def queryset(self, request, queryset):
+        if self.value() == self.IS_PAID_TRUE:
+            return queryset.filter(is_paid=True)
+        elif self.value() == self.IS_PAID_FALSE:
+            return queryset.filter(is_paid=False)
 
 
 # Custom admin 
@@ -367,7 +389,9 @@ class CommentDislikeAdmin(admin.ModelAdmin):
 
 @admin.register(IncreaseWalletCredit)
 class IncreaseWalletCreditAdmin(admin.ModelAdmin):
-    list_display = ['customer', 'amount', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime']
+    list_display = ['customer', 'amount', 'is_paid', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime']
     autocomplete_fields = ['customer']
     list_select_related = ['customer']
+    list_editable = ['is_paid']
+    list_filter = [IsPaidFilter]
     list_per_page = 15

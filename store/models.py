@@ -90,6 +90,7 @@ class Customer(Person):
 class IncreaseWalletCredit(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="increase_wallet_credits", verbose_name=_("Customer"))
     amount = models.PositiveIntegerField(verbose_name=_("Amount"))
+    is_paid = models.BooleanField(default=False, verbose_name=_("Is paid"))
 
     zarinpal_authority = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal authority"))
     zarinpal_ref_id = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal ref_id"))
@@ -100,7 +101,7 @@ class IncreaseWalletCredit(models.Model):
         super().clean()
 
         if self.amount < 10000:
-            raise ValidationError(_("The amount is invalid."))
+            raise ValidationError(_("The amount is invalid, minimum amount is 10,000 Rials."))
 
     def __str__(self):
         return f"+{self.amount} Rials to {self.customer}'s wallet"

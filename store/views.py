@@ -1,10 +1,11 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status as status_code
-from django.http import Http404
 from rest_framework import generics
+from rest_framework import mixins
+from django.http import Http404
 from django.db.models import Prefetch, Case, When, Value, Sum
 from django.utils.translation import gettext as _
 from rest_framework.views import APIView
@@ -16,7 +17,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
 
 from . import serializers
-from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller
+from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller, IncreaseWalletCredit
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter, OrderMeFilter
 from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete, IsOrderOwner
@@ -787,11 +788,9 @@ class PaymentCallbackSandboxAPIView(APIView):
         order = get_object_or_404(Order, zarinpal_authority=authority)
 
         if status == 'OK':
-            rial_total_price = order.get_total_price()
-
             zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
             data = zarinpal_sandbox.payment_verify(
-                rial_total_price=rial_total_price, 
+                rial_total_price=order.get_total_price(), 
                 authority=authority
             )
             
@@ -808,4 +807,76 @@ class PaymentCallbackSandboxAPIView(APIView):
             else:
                 return Response({'detail': _('The payment was unsuccessful.')}, status=status_code.HTTP_400_BAD_REQUEST)
         else:
+            return Response({'detail': _('The payment was unsuccessful.')}, status=status_code.HTTP_400_BAD_REQUEST)
+
+
+class IncreaseWalletCreditViewSet(mixins.ListModelMixin,
+                                  mixins.CreateModelMixin,
+                                  GenericViewSet):
+    queryset = IncreaseWalletCredit.objects.select_related('customer__user').order_by('-created_datetime')
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
+    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return serializers.IncreaseWalletCreditCreateSerializer
+        return serializers.IncreaseWalletCreditSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        increase_wallet_credit = serializer.save()
+
+        customer = request.user.customer
+
+        zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
+        data = zarinpal_sandbox.payment_request(
+            rial_total_price=increase_wallet_credit.amount, 
+            description=f'#{increase_wallet_credit.id}: {customer.first_name} {customer.last_name}',
+            callback_url=request.build_absolute_uri(reverse('store:wallet-credit-callback'))
+        )
+
+        authority = data['Authority']
+        
+        increase_wallet_credit.zarinpal_authority = authority
+        increase_wallet_credit.save(update_fields=['zarinpal_authority'])
+
+        if 'errors' not in data or len(data['errors']) == 0:
+            return redirect(zarinpal_sandbox.generate_payment_page_url(authority=authority))
+        else:
+
+            return Response({'detail': _('Error from zarinpal.')}, status=status_code.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def callback(self, request, *args, **kwargs):
+        status = request.query_params.get('Status')
+        authority = request.query_params.get('Authority')
+
+        increase_wallet_credit = get_object_or_404(IncreaseWalletCredit, zarinpal_authority=authority)
+
+        if status == 'OK':
+            zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
+            data = zarinpal_sandbox.payment_verify(
+                rial_total_price=increase_wallet_credit.amount, 
+                authority=authority
+            )
+            
+            payment_status = data['Status']
+
+            if payment_status == 100:
+                increase_wallet_credit.is_paid = True
+                increase_wallet_credit.zarinpal_ref_id = data['RefID']
+                increase_wallet_credit.save(update_fields=['is_paid', 'zarinpal_ref_id'])
+
+                return Response({'detail': _('Your payment has been successfully complete.')}, status=status_code.HTTP_200_OK)
+            elif payment_status == 101:
+                return Response({'detail': _('Your payment has been successfully complete and has already been register.')}, status=status_code.HTTP_200_OK)
+            else:
+                increase_wallet_credit.delete()
+                return Response({'detail': _('The payment was unsuccessful.')}, status=status_code.HTTP_400_BAD_REQUEST)
+        else:
+            increase_wallet_credit.delete()
             return Response({'detail': _('The payment was unsuccessful.')}, status=status_code.HTTP_400_BAD_REQUEST)

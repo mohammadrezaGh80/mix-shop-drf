@@ -11,7 +11,7 @@ from datetime import date, timedelta
 from types import NoneType
 from mptt.exceptions import InvalidMove
 
-from .models import Cart, CartItem, Category, Comment, Customer, Address, Order, OrderItem, Person, ProductImage, Seller, Product
+from .models import Cart, CartItem, Category, Comment, Customer, Address, IncreaseWalletCredit, Order, OrderItem, Person, ProductImage, Seller, Product
 
 User = get_user_model()
 
@@ -837,4 +837,36 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['status'] = instance.get_status_display()
         return representation
+
+
+class IncreaseWalletCreditCustomerSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.phone', read_only=True)
+
+    class Meta:
+        model = Customer
+        fields = ['id', 'user', 'first_name', 'last_name']
+
+class IncreaseWalletCreditSerializer(serializers.ModelSerializer):
+    customer = IncreaseWalletCreditCustomerSerializer()
+    created_datetime = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
     
+    class Meta:
+        model = IncreaseWalletCredit
+        fields = ['id', 'customer', 'amount', 'is_paid', 'created_datetime']
+
+
+class IncreaseWalletCreditCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncreaseWalletCredit
+        fields = ['amount']
+    
+    def validate_amount(self, amount):
+        if amount < 10000:
+            raise serializers.ValidationError(_("The amount is invalid, minimum amount is 10,000 Rials."))
+        
+        return amount
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        validated_data['customer'] = request.user.customer
+        return super().create(validated_data)

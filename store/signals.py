@@ -3,7 +3,7 @@ from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
 
 
-from .models import CartItem, Customer, Seller, Cart, Order, OrderItem, Product
+from .models import CartItem, Customer, IncreaseWalletCredit, Seller, Cart, Order, OrderItem, Product
 from core.signals import superuser_created, add_user_to_staff, remove_users_from_staff
 
 User = get_user_model()
@@ -202,3 +202,23 @@ def change_products_inventory_based_on_change_order_status(sender, instance, **k
                 order_item.product.inventory += order_item.quantity
                 products.append(order_item.product)
             Product.objects.bulk_update(products, fields=['inventory'])
+
+
+@receiver(pre_save, sender=IncreaseWalletCredit)
+def change_amount_of_wallet_customer_based_on_change_increase_wallet_credit_is_paid(sender, instance, **kwargs):
+    if instance.id:
+        previous_instance = IncreaseWalletCredit.objects.get(id=instance.id)
+
+        if previous_instance.is_paid != instance.is_paid:
+            customer = instance.customer
+            if instance.is_paid == True:
+                customer.wallet_amount += instance.amount
+            else:
+                customer.wallet_amount -= instance.amount
+
+            customer.save(update_fields=['wallet_amount'])
+    else:
+        if instance.is_paid == True:
+            customer = instance.customer
+            customer.wallet_amount += instance.amount
+            customer.save(update_fields=['wallet_amount'])
