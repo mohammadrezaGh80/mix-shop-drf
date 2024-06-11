@@ -406,9 +406,17 @@ class Order(models.Model):
         (ORDER_STATUS_UNPAID, _("Unpaid"))
     ]
 
+    ORDER_PAYMENT_METHOD_ONLINE = "o"
+    ORDER_PAYMENT_METHOD_WALLET = "w"
+    ORDER_PAYMENT_METHOD = [
+        (ORDER_PAYMENT_METHOD_ONLINE, _("Online")),
+        (ORDER_PAYMENT_METHOD_WALLET, _("Wallet"))
+    ]
+
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="orders", verbose_name=_("Customer"))
     status = models.CharField(max_length=1, choices=ORDER_STATUS, default=ORDER_STATUS_UNPAID, verbose_name=_("Status"))
     address = models.ForeignKey(Address, on_delete=models.PROTECT, related_name="orders", verbose_name=_("Address"))
+    payment_method = models.CharField(max_length=1, choices=ORDER_PAYMENT_METHOD, default=ORDER_PAYMENT_METHOD_ONLINE, verbose_name=_("Payment method"))
 
     zarinpal_authority = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal authority"))
     zarinpal_ref_id = models.CharField(max_length=255, blank=True, verbose_name=_("Zarinpal ref_id"))
@@ -448,6 +456,21 @@ class Order(models.Model):
 
         if self.delivery_date not in valid_dates:
             raise ValidationError(_("It's not possible to deliver the order on the selected day(Valid dates: %(valid_dates)s).") % {"valid_dates": ", ".join([date.strftime("%d-%m-%Y") for date in valid_dates])})
+
+        print(self.__dict__)
+        
+        if self.id:
+            previous_instance = Order.objects.get(id=self.id)
+
+            if previous_instance.status in [Order.ORDER_STATUS_CANCELED, Order.ORDER_STATUS_UNPAID] and self.status == self.ORDER_STATUS_PAID and \
+               self.payment_method == self.ORDER_PAYMENT_METHOD_WALLET and \
+               self.customer.wallet_amount < self.get_total_price():
+                raise ValidationError(_("Customer's wallet balance is not enough."))
+        else:
+            if self.status == self.ORDER_STATUS_PAID and \
+               self.payment_method == self.ORDER_PAYMENT_METHOD_WALLET and \
+               self.customer.wallet_amount < self.get_total_price():
+                raise ValidationError(_("Customer's wallet balance is not enough."))
 
     def __str__(self):
         return f"Order {self.id}"

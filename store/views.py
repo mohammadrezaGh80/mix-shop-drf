@@ -751,32 +751,48 @@ class ClearAllCartAPIView(APIView):
         return Response(status=status_code.HTTP_204_NO_CONTENT)
 
 
-class PaymentProcessSandboxAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsOrderOwner]
+class PaymentProcessSandboxGenericAPIView(generics.GenericAPIView):
+    serializer_class = serializers.OrderPaymentSerializer
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         customer = request.user.customer
-        order_id = request.query_params.get('order_id')
-        order = get_object_or_404(Order, id=order_id, status=Order.ORDER_STATUS_UNPAID)
+        payment_method = serializer.validated_data.get('payment_method')
+        order_id = serializer.validated_data.get('order_id')
+
+        order = get_object_or_404(Order, id=order_id, customer_id=customer.id, status=Order.ORDER_STATUS_UNPAID)
 
         rial_total_price = order.get_total_price()
 
-        zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
-        data = zarinpal_sandbox.payment_request(
-            rial_total_price=rial_total_price, 
-            description=f'#{order.id}: {customer.first_name} {customer.last_name}',
-            callback_url=request.build_absolute_uri(reverse('store:payment-callback-sandbox'))
-        )
+        if payment_method == Order.ORDER_PAYMENT_METHOD_ONLINE:
+            zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
+            data = zarinpal_sandbox.payment_request(
+                rial_total_price=rial_total_price, 
+                description=f'#{order.id}: {customer.first_name} {customer.last_name}',
+                callback_url=request.build_absolute_uri(reverse('store:payment-callback-sandbox'))
+            )
 
-        authority = data['Authority']
-        
-        order.zarinpal_authority = authority
-        order.save(update_fields=['zarinpal_authority'])
+            authority = data['Authority']
+            
+            order.zarinpal_authority = authority
+            order.save(update_fields=['zarinpal_authority'])
 
-        if 'errors' not in data or len(data['errors']) == 0:
-            return redirect(zarinpal_sandbox.generate_payment_page_url(authority=authority))
+            if 'errors' not in data or len(data['errors']) == 0:
+                return redirect(zarinpal_sandbox.generate_payment_page_url(authority=authority))
+            else:
+                return Response({'detail': _('Error from zarinpal.')}, status=status_code.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'detail': _('Error from zarinpal.')}, status=status_code.HTTP_400_BAD_REQUEST)
+            if customer.wallet_amount < rial_total_price:
+                return Response({'detail': _('Your wallet balance is not enough.')}, status=status_code.HTTP_400_BAD_REQUEST)
+            
+            order.status = Order.ORDER_STATUS_PAID
+            order.payment_method = Order.ORDER_PAYMENT_METHOD_WALLET
+            order.save(update_fields=['status', 'payment_method'])
+
+            return Response({'detail': _('Your payment has been successfully complete.')}, status=status_code.HTTP_200_OK) 
 
 
 class PaymentCallbackSandboxAPIView(APIView):

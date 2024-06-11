@@ -174,6 +174,9 @@ class Command(BaseCommand):
                 address=random.choice(customer.addresses.all()),
                 created_datetime=datetime.now()
             )
+            if order.status == Order.ORDER_STATUS_PAID:
+                order.payment_method = Order.ORDER_PAYMENT_METHOD_WALLET
+
             order.created_datetime = datetime(year=random.randrange(2019, 2023), month=random.randint(1,12), day=random.randint(1,28), tzinfo=timezone.utc)
             order.delivery_date = order.created_datetime.date() + timedelta(days=random.choice([3, 4, 5]))
             order.save()

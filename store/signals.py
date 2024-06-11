@@ -222,3 +222,22 @@ def change_amount_of_wallet_customer_based_on_change_increase_wallet_credit_is_p
             customer = instance.customer
             customer.wallet_amount += instance.amount
             customer.save(update_fields=['wallet_amount'])
+
+
+@receiver(pre_save, sender=Order)
+def change_amount_of_wallet_customer_based_on_payment_method_wallet(sender, instance, **kwargs):
+    if instance.id:
+        previous_instance = Order.objects.get(id=instance.id)
+
+        if previous_instance.status in [Order.ORDER_STATUS_CANCELED, Order.ORDER_STATUS_UNPAID] and instance.status == Order.ORDER_STATUS_PAID and \
+           instance.payment_method == Order.ORDER_PAYMENT_METHOD_WALLET:
+            customer = instance.customer
+
+            customer.wallet_amount -= instance.get_total_price()
+            customer.save(update_fields=['wallet_amount'])
+        elif previous_instance.status == Order.ORDER_STATUS_PAID and instance.status in [Order.ORDER_STATUS_CANCELED, Order.ORDER_STATUS_UNPAID] and \
+           instance.payment_method == Order.ORDER_PAYMENT_METHOD_WALLET:
+            customer = instance.customer
+
+            customer.wallet_amount += previous_instance.get_total_price()
+            customer.save(update_fields=['wallet_amount'])

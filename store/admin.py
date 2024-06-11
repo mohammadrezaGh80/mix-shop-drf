@@ -241,6 +241,7 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
     list_display = ['get_content_object', 'get_user_type', 'province', 'city', 'plaque', 'postal_code']
+    search_fields = ['province', 'city']
     list_per_page = 15
 
     def get_queryset(self, request):
@@ -319,10 +320,10 @@ class CartItemAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['customer', 'status', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime', 'delivery_date', 'num_of_items']
+    list_display = ['customer', 'status', 'zarinpal_authority', 'zarinpal_ref_id', 'created_datetime', 'delivery_date', 'payment_method', 'num_of_items']
     list_select_related = ['customer']
     search_fields = ['id']
-    autocomplete_fields = ['customer']
+    autocomplete_fields = ['customer', 'address']
     list_per_page = 15
 
     def get_queryset(self, request):

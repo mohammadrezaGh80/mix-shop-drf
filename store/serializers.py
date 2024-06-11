@@ -870,3 +870,11 @@ class IncreaseWalletCreditCreateSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         validated_data['customer'] = request.user.customer
         return super().create(validated_data)
+
+
+class OrderPaymentSerializer(serializers.ModelSerializer):
+    order_id = serializers.IntegerField()
+    
+    class Meta:
+        model = Order
+        fields = ['payment_method', 'order_id']
