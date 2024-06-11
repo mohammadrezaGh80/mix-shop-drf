@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-13 17:19+0330\n"
-"PO-Revision-Date: 2024-05-13 17:20+0330\n"
+"POT-Creation-Date: 2024-06-11 10:16+0330\n"
+"PO-Revision-Date: 2024-06-11 09:38+0330\n"
 "Last-Translator: Anonymous User <None>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -19,47 +19,55 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Translated-Using: django-rosetta 0.10.0\n"
 
-#: admin.py:24 filters.py:21 filters.py:69 models.py:54
+#: admin.py:26 filters.py:21 filters.py:69 models.py:54
 msgid "Male"
 msgstr "مرد"
 
-#: admin.py:25 filters.py:22 filters.py:70 models.py:55
+#: admin.py:27 filters.py:22 filters.py:70 models.py:55
 msgid "Female"
 msgstr "زن"
 
-#: admin.py:26 filters.py:23 models.py:56
+#: admin.py:28 filters.py:23 models.py:56
 msgid "Not defined"
 msgstr "مشخص نشده"
 
-#: admin.py:48
+#: admin.py:50
 msgid "Low"
 msgstr "کم"
 
-#: admin.py:49
+#: admin.py:51
 msgid "Medium"
 msgstr "متوسط"
 
-#: admin.py:50
+#: admin.py:52
 msgid "High"
 msgstr "زیاد"
 
-#: admin.py:99 admin.py:279
+#: admin.py:73
+msgid "True"
+msgstr "بله"
+
+#: admin.py:74
+msgid "False"
+msgstr "خیر"
+
+#: admin.py:121 admin.py:308
 msgid "phone"
 msgstr "شماره تلفن"
 
-#: admin.py:103
+#: admin.py:125
 msgid "age"
 msgstr "سن"
 
-#: filters.py:127 models.py:380
+#: filters.py:127 models.py:404
 msgid "Paid"
 msgstr "پرداخت شده"
 
-#: filters.py:128 models.py:381
+#: filters.py:128 models.py:405
 msgid "Canceled"
 msgstr "لغو شده"
 
-#: filters.py:129 models.py:382
+#: filters.py:129 models.py:406
 msgid "Unpaid"
 msgstr "پرداخت نشده"
 
@@ -79,12 +87,12 @@ msgstr "پلاک"
 msgid "Postal code"
 msgstr "کد پستی"
 
-#: models.py:38 models.py:266 models.py:302 models.py:329
+#: models.py:38 models.py:290 models.py:326 models.py:353
 #, python-format
 msgid "There isn't any %(user_type)s with id=%(object_id)d."
 msgstr "%(user_type)s با شناسه %(object_id)d وجود ندارد."
 
-#: models.py:44 models.py:387
+#: models.py:44 models.py:418
 msgid "Address"
 msgstr "آدرس"
 
@@ -112,7 +120,7 @@ msgstr "عکس پروفایل"
 msgid "Gender"
 msgstr "جنسیت"
 
-#: models.py:74 models.py:103
+#: models.py:74 models.py:127
 msgid "User"
 msgstr "کاربر"
 
@@ -120,7 +128,7 @@ msgstr "کاربر"
 msgid "Wallet amount"
 msgstr "مقدار کیف پول"
 
-#: models.py:86 models.py:340 models.py:385
+#: models.py:86 models.py:91 models.py:364 models.py:416
 msgid "Customer"
 msgstr "مشتری"
 
@@ -128,262 +136,291 @@ msgstr "مشتری"
 msgid "Customers"
 msgstr "مشتریان"
 
-#: models.py:96 models.py:225
+#: models.py:92
+msgid "Amount"
+msgstr "مبلغ"
+
+#: models.py:93
+msgid "Is paid"
+msgstr "پرداخت شده؟"
+
+#: models.py:95 models.py:421
+msgid "Zarinpal authority"
+msgstr "شناسه مرجع درخواست زرین پال"
+
+#: models.py:96 models.py:422
+msgid "Zarinpal ref_id"
+msgstr "شناسه تراكنش پرداخت زرین پال"
+
+#: models.py:98 models.py:193 models.py:282 models.py:319 models.py:346
+#: models.py:366 models.py:424
+msgid "Created datetime"
+msgstr "تاریخ و زمان ایجاد شده"
+
+#: models.py:104 serializers.py:865
+msgid "The amount is invalid, minimum amount is 10,000 Rials."
+msgstr "مبلغ نامعتبر است، حداقل مبلغ 10000 ریال می باشد."
+
+#: models.py:110
+msgid "Increase wallet credit"
+msgstr "افزایش اعتبار کیف پول"
+
+#: models.py:111
+msgid "Increase wallet credits"
+msgstr "افزایش اعتبارهای کیف پول"
+
+#: models.py:120 models.py:249
 msgid "Waiting"
 msgstr "در انتظار"
 
-#: models.py:97
+#: models.py:121
 msgid "Accepted"
 msgstr "پذیرفته شده"
 
-#: models.py:98
+#: models.py:122
 msgid "Rejected"
 msgstr "رد شده"
 
-#: models.py:104
+#: models.py:128
 msgid "Company name"
 msgstr "نام شرکت"
 
-#: models.py:105 serializers.py:157
+#: models.py:129 serializers.py:157
 msgid "CV"
 msgstr "رزومه"
 
-#: models.py:106
+#: models.py:130
 msgid "National code"
 msgstr "کد ملی"
 
-#: models.py:107 models.py:254 models.py:386
+#: models.py:131 models.py:278 models.py:417
 msgid "Status"
 msgstr "وضعیت"
 
-#: models.py:118
+#: models.py:142
 msgid "When creating a seller, its status can't be set to rejected."
 msgstr "هنگام ایجاد یک فروشنده، نمی توان وضعیت آن را روی رد شده تنظیم کرد."
 
-#: models.py:121
+#: models.py:145
 msgid ""
 "You can't change status this seller because there is some products relating "
 "this seller, Please remove them first."
 msgstr ""
-"نمی توانید وضعیت این فروشنده را تغییر دهید زیرا برخی از محصولات مربوط به این"
-" فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
+"نمی توانید وضعیت این فروشنده را تغییر دهید زیرا برخی از محصولات مربوط به این "
+"فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: models.py:127 models.py:161
+#: models.py:151 models.py:185
 msgid "Seller"
 msgstr "فروشنده"
 
-#: models.py:128
+#: models.py:152
 msgid "Sellers"
 msgstr "فروشندگان"
 
-#: models.py:132 models.py:159 models.py:252
+#: models.py:156 models.py:183 models.py:276
 msgid "Title"
 msgstr "عنوان"
 
-#: models.py:133
+#: models.py:157
 msgid "Sub category"
 msgstr "زیر دسته بندی"
 
-#: models.py:154 models.py:162
+#: models.py:178 models.py:186
 msgid "Category"
 msgstr "دسته بندی"
 
-#: models.py:155
+#: models.py:179
 msgid "Categories"
 msgstr "دسته بندی ها"
 
-#: models.py:160
+#: models.py:184
 msgid "Slug"
 msgstr "اسلاگ"
 
-#: models.py:163
+#: models.py:187
 msgid "Description"
 msgstr "توضیحات"
 
-#: models.py:164 models.py:440
+#: models.py:188 models.py:485
 msgid "Price"
 msgstr "قیمت"
 
-#: models.py:165
+#: models.py:189
 msgid "Inventory"
 msgstr "موجودی"
 
-#: models.py:166
+#: models.py:190
 msgid "Specifications"
 msgstr "خصوصیات"
 
-#: models.py:167
+#: models.py:191
 msgid "Viewer"
 msgstr "بیننده"
 
-#: models.py:169 models.py:258 models.py:295 models.py:322 models.py:342
-#: models.py:392
-msgid "Created datetime"
-msgstr "تاریخ و زمان ایجاد شده"
-
-#: models.py:170 models.py:259 models.py:296 models.py:323 models.py:343
+#: models.py:194 models.py:283 models.py:320 models.py:347 models.py:367
 msgid "Modified datetime"
 msgstr "تاریخ و زمان اصلاح شده"
 
-#: models.py:176 models.py:181 models.py:251 models.py:355 models.py:438
+#: models.py:200 models.py:205 models.py:275 models.py:379 models.py:483
 msgid "Product"
 msgstr "محصول"
 
-#: models.py:177
+#: models.py:201
 msgid "Products"
 msgstr "محصولات"
 
-#: models.py:183
+#: models.py:207
 msgid ""
 "File extension not allowed. Allowed extensions include  .jpg, .jpeg .png"
 msgstr "سوند فایل مجاز نیست پسوندهای مجاز شامل png, .jpeg, .jpg."
 
-#: models.py:184
+#: models.py:208
 msgid "Image"
 msgstr "عکس"
 
-#: models.py:185
+#: models.py:209
 msgid "Name"
 msgstr "نام"
 
-#: models.py:192
+#: models.py:216
 msgid "This field is required."
 msgstr "این فیلد اجباری است."
 
-#: models.py:203
+#: models.py:227
 msgid "This image for product is duplicated."
 msgstr "این تصویر برای محصول تکراری است."
 
-#: models.py:205
+#: models.py:229
 msgid "This image has already been uploaded."
 msgstr "این تصویر قبلا آپلود شده است."
 
-#: models.py:216
+#: models.py:240
 msgid "Product image"
 msgstr "عکس محصول"
 
-#: models.py:217
+#: models.py:241
 msgid "Product images"
 msgstr "عکس های محصول"
 
-#: models.py:226
+#: models.py:250
 msgid "Approved"
 msgstr "تایید شده"
 
-#: models.py:227
+#: models.py:251
 msgid "Not approved"
 msgstr "تایید نشده"
 
-#: models.py:236
+#: models.py:260
 msgid "Very bad"
 msgstr "خیلی بد"
 
-#: models.py:237
+#: models.py:261
 msgid "Bad"
 msgstr "بد"
 
-#: models.py:238
+#: models.py:262
 msgid "Normal"
 msgstr "معمولی"
 
-#: models.py:239
+#: models.py:263
 msgid "Good"
 msgstr "خوب"
 
-#: models.py:240
+#: models.py:264
 msgid "Excellent"
 msgstr "عالی"
 
-#: models.py:253
+#: models.py:277
 msgid "Body"
 msgstr "بدنه"
 
-#: models.py:255
+#: models.py:279
 msgid "Reply to"
 msgstr "پاسخ به"
 
-#: models.py:256
+#: models.py:280
 msgid "Rating"
 msgstr "امتیاز دادن"
 
-#: models.py:269
+#: models.py:293
 msgid "A comment that is a reply cannot be rating."
 msgstr "نظری که یک پاسخ است نمی تواند امتیاز دهی شود."
 
-#: models.py:271
+#: models.py:295
 msgid "A comment that isn't a reply should be rating."
 msgstr "نظری که پاسخ نیست باید امتیاز دهی شود."
 
-#: models.py:281 models.py:293 models.py:320
+#: models.py:305 models.py:317 models.py:344
 msgid "Comment"
 msgstr "نظر"
 
-#: models.py:282
+#: models.py:306
 msgid "Comments"
 msgstr "نظرات"
 
-#: models.py:308
+#: models.py:332
 msgid "Comment like"
 msgstr "موافق نظر"
 
-#: models.py:309
+#: models.py:333
 msgid "Comment likes"
 msgstr "موافقان نظر"
 
-#: models.py:335
+#: models.py:359
 msgid "Comment dislike"
 msgstr "مخالف نظر"
 
-#: models.py:336
+#: models.py:360
 msgid "Comment dislikes"
 msgstr "مخالفان نظر"
 
-#: models.py:349 models.py:354
+#: models.py:373 models.py:378
 msgid "Cart"
 msgstr "سبد خرید"
 
-#: models.py:350
+#: models.py:374
 msgid "Carts"
 msgstr "سبدهای خرید"
 
-#: models.py:356 models.py:439
+#: models.py:380 models.py:484
 msgid "Quantity"
 msgstr "تعداد"
 
-#: models.py:362
+#: models.py:386
 #, python-format
 msgid ""
-"You can't add product more than product's inventory(%(product_quantity)d) to"
-" cart."
+"You can't add product more than product's inventory(%(product_quantity)d) to "
+"cart."
 msgstr ""
 "نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سبد خرید "
 "اضافه کنید."
 
-#: models.py:371
+#: models.py:395
 msgid "Cart item"
 msgstr "کالای سبد خرید"
 
-#: models.py:372
+#: models.py:396
 msgid "Cart items"
 msgstr "کالاهای سبد خرید"
 
-#: models.py:389
-msgid "Zarinpal authority"
-msgstr "شناسه مرجع درخواست زرین پال"
+#: models.py:412
+msgid "Online"
+msgstr "آنلاین"
 
-#: models.py:390
-msgid "Zarinpal ref_id"
-msgstr "شناسه تراكنش پرداخت زرین پال"
+#: models.py:413
+msgid "Wallet"
+msgstr "کیف پول"
 
-#: models.py:393
+#: models.py:419
+msgid "Payment method"
+msgstr "روش پرداخت"
+
+#: models.py:425
 msgid "Delivery date"
 msgstr "تاریخ تحویل"
 
-#: models.py:410
+#: models.py:442
 #, python-format
-#| msgid ""
-#| "To register an order, you must first complete your personal information in "
-#| "your profile."
 msgid ""
 "To register an order, you must first complete the customer's personal "
 "information with ID=%(customer_id)d."
@@ -391,16 +428,15 @@ msgstr ""
 "برای ثبت سفارش، ابتدا باید اطلاعات شخصی مشتری با شناسه %(customer_id)d را "
 "تکمیل کنید."
 
-#: models.py:413
+#: models.py:445
 #, python-format
-#| msgid "The address with id=%(address_id)d doesn't belong to you."
 msgid ""
 "The address with id=%(address_id)d doesn't belong to customer with "
 "ID=%(customer_id)d."
 msgstr ""
 "آدرسی با شناسه %(address_id)d  متعلق به مشتری با شناسه %(customer_id)d نیست."
 
-#: models.py:426 serializers.py:754
+#: models.py:458 serializers.py:754
 #, python-format
 msgid ""
 "It's not possible to deliver the order on the selected day(Valid dates: "
@@ -409,28 +445,32 @@ msgstr ""
 "امکان تحویل سفارش در روز انتخاب شده وجود ندارد(تاریخ های معتبر: "
 "%(valid_dates)s)."
 
-#: models.py:432 models.py:437
+#: models.py:466 models.py:471
+msgid "Customer's wallet balance is not enough."
+msgstr "موجودی کیف پول مشتری کافی نیست."
+
+#: models.py:477 models.py:482
 msgid "Order"
 msgstr "سفارش"
 
-#: models.py:433
+#: models.py:478
 msgid "Orders"
 msgstr "سفارشات"
 
-#: models.py:446
+#: models.py:491
 #, python-format
 msgid ""
-"You can't add product more than product's inventory(%(product_quantity)d) to"
-" order."
+"You can't add product more than product's inventory(%(product_quantity)d) to "
+"order."
 msgstr ""
 "نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سفارش "
 "اضافه کنید."
 
-#: models.py:453
+#: models.py:498
 msgid "Order item"
 msgstr "کالای سفارش"
 
-#: models.py:454
+#: models.py:499
 msgid "Order items"
 msgstr "کالاهای سفارش"
 
@@ -463,8 +503,7 @@ msgstr "حجم فایل رزومه باید حداکثر ۵ مگابایت با�
 
 #: serializers.py:243
 msgid ""
-"A category may not be made a sub_category of any of its descendants or "
-"itself"
+"A category may not be made a sub_category of any of its descendants or itself"
 msgstr ""
 "یک دسته بندی را نمی توان به عنوان یک زیر دسته بندی از نوادگانش یا خودش قرار "
 "داد"
@@ -472,8 +511,7 @@ msgstr ""
 #: serializers.py:330
 #, python-format
 msgid ""
-"There isn't comment with id=%(reply_to_id)d in the %(product_title)s "
-"product."
+"There isn't comment with id=%(reply_to_id)d in the %(product_title)s product."
 msgstr "نظری با شناسه %(reply_to_id)d در محصول %(product_title)s وجود ندارد."
 
 #: serializers.py:458
@@ -500,8 +538,8 @@ msgstr "این محصول در سبد خرید مشتری وجود دارد."
 #: serializers.py:658
 #, python-format
 msgid ""
-"You can't add product more than product's inventory(%(product_quantity)d) to"
-" your cart."
+"You can't add product more than product's inventory(%(product_quantity)d) to "
+"your cart."
 msgstr ""
 "نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سبد خرید "
 "خود اضافه کنید."
@@ -515,6 +553,11 @@ msgstr "آدرسی با شناسه %(address_id)d  متعلق به شما نیس
 msgid "Your cart is empty, Please add some products to it first."
 msgstr "سبد خرید شما خالی است، لطفا ابتدا محصولاتی را به آن اضافه کنید."
 
+#: serializers.py:876
+#| msgid "Order item"
+msgid "Order id"
+msgstr "شناسه سفارش"
+
 #: validators.py:8
 msgid ""
 "Enter a valid postal code, Postal code must be 10 digits without dashes."
@@ -525,8 +568,8 @@ msgid ""
 "Enter a valid national code, National code must be 10 digits which start "
 "with one of the numbers between 1 and 9."
 msgstr ""
-"یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1"
-" تا 9 شروع می شود."
+"یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1 "
+"تا 9 شروع می شود."
 
 #: views.py:114
 msgid "Your request has been successfully registered."
@@ -541,67 +584,70 @@ msgstr ""
 msgid "There is some products relating to you, Please remove them first."
 msgstr "برخی از محصولات مربوط به شما هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:283
+#: views.py:286
 msgid ""
 "There is some products relating this category, Please remove them first."
 msgstr ""
 "برخی از محصولات مربوط به این دسته بندی هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:340
+#: views.py:346
 msgid ""
 "There is some order items relating this product, Please remove them first."
 msgstr ""
-"برخی از کالاهای سفارش مربوط به این محصول هستند، لطفاً ابتدا آنها را حذف "
-"کنید."
+"برخی از کالاهای سفارش مربوط به این محصول هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:463 views.py:504
+#: views.py:469 views.py:510
 #, python-format
 msgid ""
 "There isn't comment with id=%(comment_id)d in the %(product_title)s product."
 msgstr "نظری با شناسه %(comment_id)d در محصول %(product_title)s وجود ندارد."
 
-#: views.py:466
+#: views.py:472
 msgid "A comment that is a reply cannot be liked."
 msgstr "نظری که یک پاسخ است نمی تواند موافقت شود."
 
-#: views.py:482
+#: views.py:488
 msgid "The comment like was removed."
 msgstr "موافقت نظر حذف شد."
 
-#: views.py:486
+#: views.py:492
 msgid "The comment was successfully liked."
 msgstr "نظر با موفقیت موافقت شد."
 
-#: views.py:507
+#: views.py:513
 msgid "A comment that is a reply cannot be disliked."
 msgstr "نظری که یک پاسخ است نمی تواند مخالفت شود."
 
-#: views.py:523
+#: views.py:529
 msgid "The comment dislike was removed."
 msgstr "مخالفت نظر حذف شد."
 
-#: views.py:527
+#: views.py:533
 msgid "The comment was successfully disliked."
 msgstr "نظر با موفقیت مخالفت شد."
 
-#: views.py:742
+#: views.py:748
 msgid "The cart is empty."
 msgstr "سبد خرید خالی است."
 
-#: views.py:780
+#: views.py:786 views.py:870
 msgid "Error from zarinpal."
 msgstr "خطا از طرف زرین پال."
 
-#: views.py:814
+#: views.py:789
+msgid "Your wallet balance is not enough."
+msgstr "موجودی کیف پول شما کافی نیست."
+
+#: views.py:795 views.py:820 views.py:893
 msgid "Your payment has been successfully complete."
 msgstr "پرداخت شما با موفقیت انجام شد."
 
-#: views.py:816
+#: views.py:822 views.py:895
 msgid ""
 "Your payment has been successfully complete and has already been register."
 msgstr "پرداخت شما با موفقیت انجام شد و قبلا ثبت شده است."
 
-#: views.py:818 views.py:820
+#: views.py:824 views.py:826 views.py:898 views.py:901
 msgid "The payment was unsuccessful."
 msgstr "پرداخت ناموفق بود."
 
@@ -609,8 +655,8 @@ msgstr "پرداخت ناموفق بود."
 #~ "Enter a valid phone number, phone number must have 11 digits which starts "
 #~ "with the number 09."
 #~ msgstr ""
-#~ "یک شماره تلفن معتبر وارد کنید، شماره تلفن باید دارای 11 رقم باشد که با رقم "
-#~ "های 09 شروع می شود."
+#~ "یک شماره تلفن معتبر وارد کنید، شماره تلفن باید دارای 11 رقم باشد که با "
+#~ "رقم های 09 شروع می شود."
 
 #~ msgid "Order register datetime"
 #~ msgstr "تاریخ و زمان ثبت سفارش"

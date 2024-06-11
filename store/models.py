@@ -456,8 +456,6 @@ class Order(models.Model):
 
         if self.delivery_date not in valid_dates:
             raise ValidationError(_("It's not possible to deliver the order on the selected day(Valid dates: %(valid_dates)s).") % {"valid_dates": ", ".join([date.strftime("%d-%m-%Y") for date in valid_dates])})
-
-        print(self.__dict__)
         
         if self.id:
             previous_instance = Order.objects.get(id=self.id)

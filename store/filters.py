@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from datetime import date, timedelta
 
-from .models import Category, Customer, Order, Product, Seller
+from .models import Category, Customer, Order, Product, Seller, IncreaseWalletCredit
 
 
 class CustomerFilter(django_filters.FilterSet):
@@ -153,4 +153,12 @@ class OrderFilter(OrderMeFilter):
     
     class Meta:
         model = Order
+        fields = []
+
+
+class IncreaseWalletCreditFilter(django_filters.FilterSet):
+    is_paid = django_filters.BooleanFilter(field_name='is_paid', label='is_paid')
+    
+    class Meta:
+        model = IncreaseWalletCredit
         fields = []

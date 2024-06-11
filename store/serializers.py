@@ -873,7 +873,7 @@ class IncreaseWalletCreditCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderPaymentSerializer(serializers.ModelSerializer):
-    order_id = serializers.IntegerField()
+    order_id = serializers.IntegerField(label=_('Order id'))
     
     class Meta:
         model = Order

@@ -19,7 +19,7 @@ from functools import cached_property
 from . import serializers
 from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller, IncreaseWalletCredit
 from .paginations import CustomLimitOffsetPagination
-from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter, OrderMeFilter
+from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter, OrderMeFilter, IncreaseWalletCreditFilter
 from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete, IsOrderOwner
 from .ordering import ProductOrderingFilter
 from .payment import ZarinpalSandbox
@@ -771,7 +771,7 @@ class PaymentProcessSandboxGenericAPIView(generics.GenericAPIView):
             zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
             data = zarinpal_sandbox.payment_request(
                 rial_total_price=rial_total_price, 
-                description=f'#{order.id}: {customer.first_name} {customer.last_name}',
+                description=f'#{order.id}: {customer.full_name}',
                 callback_url=request.build_absolute_uri(reverse('store:payment-callback-sandbox'))
             )
 
@@ -830,6 +830,9 @@ class IncreaseWalletCreditViewSet(mixins.ListModelMixin,
                                   mixins.CreateModelMixin,
                                   GenericViewSet):
     queryset = IncreaseWalletCredit.objects.select_related('customer__user').order_by('-created_datetime')
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IncreaseWalletCreditFilter
+    pagination_class = CustomLimitOffsetPagination
     
     def get_permissions(self):
         if self.action == 'create':
@@ -851,7 +854,7 @@ class IncreaseWalletCreditViewSet(mixins.ListModelMixin,
         zarinpal_sandbox = ZarinpalSandbox(settings.ZARINPAL_MERCHANT_ID)
         data = zarinpal_sandbox.payment_request(
             rial_total_price=increase_wallet_credit.amount, 
-            description=f'#{increase_wallet_credit.id}: {customer.first_name} {customer.last_name}',
+            description=f'#{increase_wallet_credit.id}: {customer.full_name if customer.full_name else customer.user.phone}',
             callback_url=request.build_absolute_uri(reverse('store:wallet-credit-callback'))
         )
 
