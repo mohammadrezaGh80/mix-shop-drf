@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-11 10:16+0330\n"
-"PO-Revision-Date: 2024-06-11 09:38+0330\n"
+"POT-Creation-Date: 2024-07-10 14:40+0330\n"
+"PO-Revision-Date: 2024-07-10 14:41+0330\n"
 "Last-Translator: Anonymous User <None>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -19,43 +19,43 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Translated-Using: django-rosetta 0.10.0\n"
 
-#: admin.py:26 filters.py:21 filters.py:69 models.py:54
+#: admin.py:25 filters.py:21 filters.py:69 models.py:54
 msgid "Male"
 msgstr "مرد"
 
-#: admin.py:27 filters.py:22 filters.py:70 models.py:55
+#: admin.py:26 filters.py:22 filters.py:70 models.py:55
 msgid "Female"
 msgstr "زن"
 
-#: admin.py:28 filters.py:23 models.py:56
+#: admin.py:27 filters.py:23 models.py:56
 msgid "Not defined"
 msgstr "مشخص نشده"
 
-#: admin.py:50
+#: admin.py:49
 msgid "Low"
 msgstr "کم"
 
-#: admin.py:51
+#: admin.py:50
 msgid "Medium"
 msgstr "متوسط"
 
-#: admin.py:52
+#: admin.py:51
 msgid "High"
 msgstr "زیاد"
 
-#: admin.py:73
+#: admin.py:72
 msgid "True"
 msgstr "بله"
 
-#: admin.py:74
+#: admin.py:73
 msgid "False"
 msgstr "خیر"
 
-#: admin.py:121 admin.py:308
+#: admin.py:120 admin.py:307
 msgid "phone"
 msgstr "شماره تلفن"
 
-#: admin.py:125
+#: admin.py:124
 msgid "age"
 msgstr "سن"
 
@@ -206,8 +206,8 @@ msgid ""
 "You can't change status this seller because there is some products relating "
 "this seller, Please remove them first."
 msgstr ""
-"نمی توانید وضعیت این فروشنده را تغییر دهید زیرا برخی از محصولات مربوط به این "
-"فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
+"نمی توانید وضعیت این فروشنده را تغییر دهید زیرا برخی از محصولات مربوط به این"
+" فروشنده هستند، لطفاً ابتدا آنها را حذف کنید."
 
 #: models.py:151 models.py:185
 msgid "Seller"
@@ -217,7 +217,7 @@ msgstr "فروشنده"
 msgid "Sellers"
 msgstr "فروشندگان"
 
-#: models.py:156 models.py:183 models.py:276
+#: models.py:156 models.py:183 models.py:276 models.py:503
 msgid "Title"
 msgstr "عنوان"
 
@@ -389,8 +389,8 @@ msgstr "تعداد"
 #: models.py:386
 #, python-format
 msgid ""
-"You can't add product more than product's inventory(%(product_quantity)d) to "
-"cart."
+"You can't add product more than product's inventory(%(product_quantity)d) to"
+" cart."
 msgstr ""
 "نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سبد خرید "
 "اضافه کنید."
@@ -460,8 +460,8 @@ msgstr "سفارشات"
 #: models.py:491
 #, python-format
 msgid ""
-"You can't add product more than product's inventory(%(product_quantity)d) to "
-"order."
+"You can't add product more than product's inventory(%(product_quantity)d) to"
+" order."
 msgstr ""
 "نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سفارش "
 "اضافه کنید."
@@ -473,6 +473,22 @@ msgstr "کالای سفارش"
 #: models.py:499
 msgid "Order items"
 msgstr "کالاهای سفارش"
+
+#: models.py:504
+msgid "URL"
+msgstr "مسیر"
+
+#: models.py:505
+msgid "Sub menu"
+msgstr "زیر منو"
+
+#: models.py:515
+msgid "Menu"
+msgstr "منو"
+
+#: models.py:516
+msgid "Menus"
+msgstr "منو ها"
 
 #: permissions.py:18
 msgid "Your request is under review."
@@ -503,7 +519,8 @@ msgstr "حجم فایل رزومه باید حداکثر ۵ مگابایت با�
 
 #: serializers.py:243
 msgid ""
-"A category may not be made a sub_category of any of its descendants or itself"
+"A category may not be made a sub_category of any of its descendants or "
+"itself"
 msgstr ""
 "یک دسته بندی را نمی توان به عنوان یک زیر دسته بندی از نوادگانش یا خودش قرار "
 "داد"
@@ -511,7 +528,8 @@ msgstr ""
 #: serializers.py:330
 #, python-format
 msgid ""
-"There isn't comment with id=%(reply_to_id)d in the %(product_title)s product."
+"There isn't comment with id=%(reply_to_id)d in the %(product_title)s "
+"product."
 msgstr "نظری با شناسه %(reply_to_id)d در محصول %(product_title)s وجود ندارد."
 
 #: serializers.py:458
@@ -538,8 +556,8 @@ msgstr "این محصول در سبد خرید مشتری وجود دارد."
 #: serializers.py:658
 #, python-format
 msgid ""
-"You can't add product more than product's inventory(%(product_quantity)d) to "
-"your cart."
+"You can't add product more than product's inventory(%(product_quantity)d) to"
+" your cart."
 msgstr ""
 "نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سبد خرید "
 "خود اضافه کنید."
@@ -554,7 +572,6 @@ msgid "Your cart is empty, Please add some products to it first."
 msgstr "سبد خرید شما خالی است، لطفا ابتدا محصولاتی را به آن اضافه کنید."
 
 #: serializers.py:876
-#| msgid "Order item"
 msgid "Order id"
 msgstr "شناسه سفارش"
 
@@ -568,8 +585,8 @@ msgid ""
 "Enter a valid national code, National code must be 10 digits which start "
 "with one of the numbers between 1 and 9."
 msgstr ""
-"یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1 "
-"تا 9 شروع می شود."
+"یک کد ملی معتبر وارد کنید، کد ملی باید 10 رقمی باشد که با یکی از اعداد بین 1"
+" تا 9 شروع می شود."
 
 #: views.py:114
 msgid "Your request has been successfully registered."
@@ -594,7 +611,8 @@ msgstr ""
 msgid ""
 "There is some order items relating this product, Please remove them first."
 msgstr ""
-"برخی از کالاهای سفارش مربوط به این محصول هستند، لطفاً ابتدا آنها را حذف کنید."
+"برخی از کالاهای سفارش مربوط به این محصول هستند، لطفاً ابتدا آنها را حذف "
+"کنید."
 
 #: views.py:469 views.py:510
 #, python-format
@@ -655,8 +673,8 @@ msgstr "پرداخت ناموفق بود."
 #~ "Enter a valid phone number, phone number must have 11 digits which starts "
 #~ "with the number 09."
 #~ msgstr ""
-#~ "یک شماره تلفن معتبر وارد کنید، شماره تلفن باید دارای 11 رقم باشد که با "
-#~ "رقم های 09 شروع می شود."
+#~ "یک شماره تلفن معتبر وارد کنید، شماره تلفن باید دارای 11 رقم باشد که با رقم "
+#~ "های 09 شروع می شود."
 
 #~ msgid "Order register datetime"
 #~ msgstr "تاریخ و زمان ثبت سفارش"

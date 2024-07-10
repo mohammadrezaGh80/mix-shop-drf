@@ -11,7 +11,7 @@ from datetime import date, timedelta
 from types import NoneType
 from mptt.exceptions import InvalidMove
 
-from .models import Cart, CartItem, Category, Comment, Customer, Address, IncreaseWalletCredit, Order, OrderItem, Person, ProductImage, Seller, Product
+from .models import Cart, CartItem, Category, Comment, Customer, Address, IncreaseWalletCredit, Menu, Order, OrderItem, Person, ProductImage, Seller, Product
 
 User = get_user_model()
 
@@ -878,3 +878,22 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['payment_method', 'order_id']
+
+
+class MenuSerializer(serializers.ModelSerializer):
+    sub_menus = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Menu
+        fields = ['id', 'title', 'url', 'sub_menus']
+    
+    def get_sub_menus(self, menu):
+        serializer = MenuSerializer(menu.sub_menus.all(), many=True)
+        return serializer.data
+
+
+class MenuCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Menu
+        fields = ['id', 'title', 'url', 'sub_menu']

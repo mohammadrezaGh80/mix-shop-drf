@@ -17,7 +17,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from functools import cached_property
 
 from . import serializers
-from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Order, OrderItem, Product, ProductImage, Seller, IncreaseWalletCredit
+from .models import Cart, CartItem, Category, Comment, CommentLike, CommentDislike, Customer, Address, Menu, Order, OrderItem, Product, ProductImage, Seller, IncreaseWalletCredit
 from .paginations import CustomLimitOffsetPagination
 from .filters import CustomerFilter, OrderFilter, SellerFilter, ProductFilter, SellerMeProductFilter, OrderMeFilter, IncreaseWalletCreditFilter
 from .permissions import IsCustomerOrSeller, IsSeller, IsAdminUserOrReadOnly, IsAdminUserOrSeller, IsAdminUserOrSellerOwner, IsAdminUserOrCommentOwner, IsCommentOwner, IsSellerMe, ProductImagePermission, IsCustomerInfoComplete, IsOrderOwner
@@ -263,7 +263,7 @@ class SellerListRequestsViewSet(ModelViewSet):
 
 
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.select_related('sub_category').order_by("-id")
+    queryset = Category.objects.select_related('sub_category').order_by('-id')
     permission_classes = [IsAdminUserOrReadOnly]
     pagination_class = CustomLimitOffsetPagination
 
@@ -899,3 +899,32 @@ class IncreaseWalletCreditViewSet(mixins.ListModelMixin,
         else:
             increase_wallet_credit.delete()
             return Response({'detail': _('The payment was unsuccessful.')}, status=status_code.HTTP_400_BAD_REQUEST)
+
+
+class MenuViewset(mixins.CreateModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
+                  mixins.ListModelMixin,
+                  GenericViewSet):
+    queryset = Menu.objects.all().order_by('-id')
+    permission_classes = [IsAdminUserOrReadOnly]
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        if self.action == 'list':
+            max_depth = 0
+            for menu in queryset:
+                depth = menu.level
+                if depth > max_depth:
+                    max_depth = depth
+        
+            return queryset.filter(sub_menu__isnull=True).prefetch_related(
+                '__'.join(['sub_menus' for _ in range(max_depth + 1)])
+            )
+        return queryset
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.MenuSerializer
+        return serializers.MenuCreateSerializer

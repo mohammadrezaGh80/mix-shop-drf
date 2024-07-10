@@ -17,6 +17,7 @@ router.register('list-waiting-comments', views.CommentListWaitingViewSet, basena
 router.register('carts', views.CartViewSet, basename='cart')
 router.register('orders', views.OrderViewSet, basename='order')
 router.register('wallet-credits', views.IncreaseWalletCreditViewSet, basename='wallet-credit')
+router.register('menus', views.MenuViewset, basename='menu')
 
 customers_router = routers.NestedDefaultRouter(router, 'customers', lookup='customer')
 customers_router.register('addresses', views.AddressCustomerViewSet, basename='customer-addresses')

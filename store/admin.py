@@ -1,6 +1,4 @@
-from typing import Any
 from django.contrib import admin
-from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Count, Case, When, Sum, Value
 from django.urls import reverse
@@ -9,7 +7,8 @@ from django.utils.html import format_html
 
 from datetime import date
 
-from .models import Customer, IncreaseWalletCredit, Seller, Category, Product, Address, Comment, Cart, CartItem, Order, OrderItem, Person, ProductImage, CommentLike, CommentDislike
+from .models import Customer, IncreaseWalletCredit, Seller, Category, Product, Address, Comment, Cart, CartItem, \
+                    Order, OrderItem, Person, ProductImage, CommentLike, CommentDislike, Menu
 
 
 # Custom filters
@@ -396,3 +395,14 @@ class IncreaseWalletCreditAdmin(admin.ModelAdmin):
     list_editable = ['is_paid']
     list_filter = [IsPaidFilter]
     list_per_page = 15
+
+
+@admin.register(Menu)
+class MenuAdmin(admin.ModelAdmin):
+    list_display = ['title', 'url', 'sub_menu']
+    search_fields = ['title']
+    autocomplete_fields = ['sub_menu']
+    list_per_page = 15
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('sub_menu')

@@ -171,8 +171,8 @@ class Category(MPTTModel):
         return self.title
     
     class MPTTMeta:
-        order_insertion_by = ['title']
-        parent_attr = 'sub_category'
+        order_insertion_by = ["title"]
+        parent_attr = "sub_category"
 
     class Meta:
         verbose_name = _("Category")
@@ -298,8 +298,8 @@ class Comment(MPTTModel):
         return f"{self.title}({self.body[:15] + '...' if len(self.body) > 15 else self.body})"
 
     class MPTTMeta:
-        order_insertion_by = ['title']
-        parent_attr = 'reply_to'
+        order_insertion_by = ["title"]
+        parent_attr = "reply_to"
     
     class Meta:
         verbose_name = _("Comment")
@@ -497,3 +497,20 @@ class OrderItem(models.Model):
         unique_together = [["order", "product"]]
         verbose_name = _("Order item")
         verbose_name_plural = _("Order items")
+
+
+class Menu(MPTTModel):
+    title = models.CharField(max_length=255, verbose_name=_("Title"))
+    url = models.CharField(max_length=255, verbose_name=_("URL"))
+    sub_menu = TreeForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="sub_menus", verbose_name=_("Sub menu"))
+
+    def __str__(self):
+        return f"{self.title}: {self.url}"
+    
+    class MPTTMeta:
+        order_insertion_by = ["title"]
+        parent_attr = "sub_menu"
+    
+    class Meta:
+        verbose_name = _("Menu")
+        verbose_name_plural = _("Menus")
