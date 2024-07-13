@@ -10,15 +10,14 @@ from drf_yasg import openapi
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('core.urls')),
-    path('store/', include('store.urls')),
-    path('rosetta/', include('rosetta.urls'))
+    path('store/', include('store.urls'))
 ]
 
 if settings.DEBUG is True:
    schema_view = get_schema_view(
          openapi.Info(
             title="Mix Shop API",
-            default_version='v1',
+            default_version="v1",
             description="These APIs are for a shop project called Mix Shop",
             contact=openapi.Contact(email="mohammadreza.gharghabi6@gmail.com"),
             license=openapi.License(name="MIT License"),
@@ -27,7 +26,8 @@ if settings.DEBUG is True:
    )
 
    urlpatterns =  urlpatterns + [
-      path('__debug__/', include('debug_toolbar.urls')),  
+      path('__debug__/', include('debug_toolbar.urls')),
+      path('rosetta/', include('rosetta.urls')),  
 
       path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
       path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui')

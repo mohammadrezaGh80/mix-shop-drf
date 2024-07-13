@@ -231,23 +231,16 @@ class SellerChangeStatusSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    sub_categories = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
-        fields = ['id', 'title', 'sub_category']
-    
-    def update(self, instance, validated_data):
-        try:
-            return super().update(instance, validated_data)
-        except InvalidMove:
-            raise serializers.ValidationError({'detail': _('A category may not be made a sub_category of any of its descendants or itself')})
+        fields = ['id', 'title', 'sub_categories']
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        if instance.sub_category:
-            representation['sub_category'] = instance.sub_category.title
-        return representation
-    
+    def get_sub_categories(self, category):
+        serializer = CategorySerializer(category.sub_categories.all(), many=True)
+        return serializer.data
+ 
 
 class CategoryDetailSerializer(serializers.ModelSerializer):
     products_count = serializers.SerializerMethodField()
@@ -255,9 +248,28 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'title', 'sub_category', 'products_count']
-    
+
     def get_products_count(self, category):
-        return category.get_products_count_of_category()    
+        return category.get_products_count_of_category()
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.sub_category:
+            representation['sub_category'] = instance.sub_category.title
+        return representation
+
+
+class CategoryCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ['id', 'title', 'sub_category']
+
+    def update(self, instance, validated_data):
+        try:
+            return super().update(instance, validated_data)
+        except InvalidMove:
+            raise serializers.ValidationError({'detail': _('A category may not be made a sub_category of any of its descendants or itself.')})
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -897,3 +909,15 @@ class MenuCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Menu
         fields = ['id', 'title', 'url', 'sub_menu']
+
+    def update(self, instance, validated_data):
+        try:
+            return super().update(instance, validated_data)
+        except InvalidMove:
+            raise serializers.ValidationError({'detail': _('A menu may not be made a sub_menu of any of its descendants or itself.')})
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.sub_menu:
+            representation['sub_menu'] = instance.sub_menu.title
+        return representation

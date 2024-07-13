@@ -17,6 +17,8 @@ import os
 from datetime import timedelta
 from environs import Env
 
+from .rosseta_access import is_access_to_rosetta_views
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -181,3 +183,6 @@ SIMPLE_JWT = {
 
 # Config zarinpal
 ZARINPAL_MERCHANT_ID = env('DJANGO_ZARINPAL_MERCHANT_ID')
+
+# Rosetta config
+ROSETTA_ACCESS_CONTROL_FUNCTION = is_access_to_rosetta_views

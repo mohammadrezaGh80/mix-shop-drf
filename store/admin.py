@@ -167,7 +167,7 @@ class SellerAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['title', 'sub_category', 'level', 'lft', 'rght', 'num_of_sub_categories', 'num_of_products']
+    list_display = ['id', 'title', 'sub_category', 'tree_id', 'level', 'lft', 'rght', 'num_of_sub_categories', 'num_of_products']
     search_fields = ['title']
     list_per_page = 15
 
@@ -399,7 +399,7 @@ class IncreaseWalletCreditAdmin(admin.ModelAdmin):
 
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
-    list_display = ['title', 'url', 'sub_menu']
+    list_display = ['title', 'url', 'sub_menu', 'tree_id', 'level', 'lft', 'rght']
     search_fields = ['title']
     autocomplete_fields = ['sub_menu']
     list_per_page = 15

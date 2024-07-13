@@ -263,21 +263,31 @@ class SellerListRequestsViewSet(ModelViewSet):
 
 
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.select_related('sub_category').order_by('-id')
-    permission_classes = [IsAdminUserOrReadOnly]
+    queryset = Category.objects.all().order_by('-id')
     pagination_class = CustomLimitOffsetPagination
+    permission_classes = [IsAdminUserOrReadOnly]
 
     def get_queryset(self):
         queryset = super().get_queryset()
-
-        if self.action == 'retrieve':
-            queryset.prefetch_related('products')
-        return queryset
-
+        
+        if self.action == 'list':
+            max_depth = 0
+            for category in queryset:
+                depth = category.level
+                if depth > max_depth:
+                    max_depth = depth
+        
+            return queryset.filter(sub_category__isnull=True).prefetch_related(
+                '__'.join(['sub_categories' for _ in range(max_depth + 1)])
+            )
+        return queryset.select_related('sub_category')
+    
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == 'list':
+            return serializers.CategorySerializer
+        elif self.action == 'retrieve':
             return serializers.CategoryDetailSerializer
-        return serializers.CategorySerializer
+        return serializers.CategoryCreateSerializer
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -907,6 +917,7 @@ class MenuViewset(mixins.CreateModelMixin,
                   mixins.ListModelMixin,
                   GenericViewSet):
     queryset = Menu.objects.all().order_by('-id')
+    pagination_class = CustomLimitOffsetPagination
     permission_classes = [IsAdminUserOrReadOnly]
     
     def get_queryset(self):
@@ -922,7 +933,7 @@ class MenuViewset(mixins.CreateModelMixin,
             return queryset.filter(sub_menu__isnull=True).prefetch_related(
                 '__'.join(['sub_menus' for _ in range(max_depth + 1)])
             )
-        return queryset
+        return queryset.select_related('sub_menu')
     
     def get_serializer_class(self):
         if self.action == 'list':

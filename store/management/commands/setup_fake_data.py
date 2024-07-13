@@ -25,7 +25,7 @@ list_of_models = [Address, Customer, Seller, Category, Product, Comment, Cart, C
 
 NUM_CUSTOMERS = 40
 NUM_SELLERS = 10
-NUM_CATEGORIES = 50
+NUM_CATEGORIES = 15
 NUM_PRODUCTS = 1000
 NUM_ORDERS = 30
 
@@ -45,7 +45,17 @@ class Command(BaseCommand):
 
         # categories data
         print(f"Adding {NUM_CATEGORIES} categories...", end='')
-        all_categories = [CategoryFactory() for _ in range(NUM_CATEGORIES)]
+        all_categories = []
+
+        for _ in range(NUM_CATEGORIES):
+            category = CategoryFactory()
+            if all_categories and random.random() <= 0.7:
+                category.sub_category = random.choice(all_categories)
+                category.save()
+            all_categories.append(category)
+
+        Category.objects.rebuild()
+
         print("DONE")
 
         # customers data
@@ -143,6 +153,8 @@ class Command(BaseCommand):
                     comment.modified_datetime = comment.created_datetime + timedelta(hours=random.randint(1, 500))
                     comment.save()
                     all_comments.append(comment)
+
+        Comment.objects.rebuild()
 
         print("DONE")
 

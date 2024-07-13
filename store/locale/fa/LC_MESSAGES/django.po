@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-10 14:40+0330\n"
-"PO-Revision-Date: 2024-07-10 14:41+0330\n"
-"Last-Translator: Anonymous User <None>\n"
+"POT-Creation-Date: 2024-07-11 16:07+0330\n"
+"PO-Revision-Date: 2024-07-12 15:29+0330\n"
+"Last-Translator: Anonymous User <anonymous@user.tld>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -157,7 +157,7 @@ msgstr "شناسه تراكنش پرداخت زرین پال"
 msgid "Created datetime"
 msgstr "تاریخ و زمان ایجاد شده"
 
-#: models.py:104 serializers.py:865
+#: models.py:104 serializers.py:877
 msgid "The amount is invalid, minimum amount is 10,000 Rials."
 msgstr "مبلغ نامعتبر است، حداقل مبلغ 10000 ریال می باشد."
 
@@ -436,7 +436,7 @@ msgid ""
 msgstr ""
 "آدرسی با شناسه %(address_id)d  متعلق به مشتری با شناسه %(customer_id)d نیست."
 
-#: models.py:458 serializers.py:754
+#: models.py:458 serializers.py:766
 #, python-format
 msgid ""
 "It's not possible to deliver the order on the selected day(Valid dates: "
@@ -517,43 +517,46 @@ msgstr "لطفا جنسیت خود را انتخاب کنید"
 msgid "CV file size should be less than or equal to 5 megabytes."
 msgstr "حجم فایل رزومه باید حداکثر ۵ مگابایت باشد."
 
-#: serializers.py:243
+#: serializers.py:272
+#| msgid ""
+#| "A category may not be made a sub_category of any of its descendants or "
+#| "itself"
 msgid ""
 "A category may not be made a sub_category of any of its descendants or "
-"itself"
+"itself."
 msgstr ""
 "یک دسته بندی را نمی توان به عنوان یک زیر دسته بندی از نوادگانش یا خودش قرار "
-"داد"
+"داد."
 
-#: serializers.py:330
+#: serializers.py:342
 #, python-format
 msgid ""
 "There isn't comment with id=%(reply_to_id)d in the %(product_title)s "
 "product."
 msgstr "نظری با شناسه %(reply_to_id)d در محصول %(product_title)s وجود ندارد."
 
-#: serializers.py:458
+#: serializers.py:470
 msgid "Image ids"
 msgstr "شناسه عکس ها"
 
-#: serializers.py:470
+#: serializers.py:482
 #, python-format
 msgid "There isn't any product image with id=%(image_id)s."
 msgstr "عکس محصولی با شناسه %(image_id)s وجود ندارد."
 
-#: serializers.py:473
+#: serializers.py:485
 msgid "There is one or more images that belong to another products."
 msgstr "یک یا چند عکس وجود دارد که متعلق به محصولات دیگر است."
 
-#: serializers.py:479 serializers.py:512
+#: serializers.py:491 serializers.py:524
 msgid "This field may not be null"
 msgstr "این فیلد نمیتواند هیچ مقدار باشد"
 
-#: serializers.py:617
+#: serializers.py:629
 msgid "This product is exist in the customer's cart."
 msgstr "این محصول در سبد خرید مشتری وجود دارد."
 
-#: serializers.py:658
+#: serializers.py:670
 #, python-format
 msgid ""
 "You can't add product more than product's inventory(%(product_quantity)d) to"
@@ -562,18 +565,25 @@ msgstr ""
 "نمی توانید محصولی را بیش از موجودی محصول(%(product_quantity)d) به سبد خرید "
 "خود اضافه کنید."
 
-#: serializers.py:738
+#: serializers.py:750
 #, python-format
 msgid "The address with id=%(address_id)d doesn't belong to you."
 msgstr "آدرسی با شناسه %(address_id)d  متعلق به شما نیست."
 
-#: serializers.py:762
+#: serializers.py:774
 msgid "Your cart is empty, Please add some products to it first."
 msgstr "سبد خرید شما خالی است، لطفا ابتدا محصولاتی را به آن اضافه کنید."
 
-#: serializers.py:876
+#: serializers.py:888
 msgid "Order id"
 msgstr "شناسه سفارش"
+
+#: serializers.py:917
+#| msgid ""
+#| "A category may not be made a sub_category of any of its descendants or "
+#| "itself"
+msgid "A menu may not be made a sub_menu of any of its descendants or itself."
+msgstr "یک منو را نمی توان به عنوان یک زیر منو از نوادگانش یا خودش قرار داد."
 
 #: validators.py:8
 msgid ""
@@ -601,71 +611,71 @@ msgstr ""
 msgid "There is some products relating to you, Please remove them first."
 msgstr "برخی از محصولات مربوط به شما هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:286
+#: views.py:296
 msgid ""
 "There is some products relating this category, Please remove them first."
 msgstr ""
 "برخی از محصولات مربوط به این دسته بندی هستند، لطفاً ابتدا آنها را حذف کنید."
 
-#: views.py:346
+#: views.py:356
 msgid ""
 "There is some order items relating this product, Please remove them first."
 msgstr ""
 "برخی از کالاهای سفارش مربوط به این محصول هستند، لطفاً ابتدا آنها را حذف "
 "کنید."
 
-#: views.py:469 views.py:510
+#: views.py:479 views.py:520
 #, python-format
 msgid ""
 "There isn't comment with id=%(comment_id)d in the %(product_title)s product."
 msgstr "نظری با شناسه %(comment_id)d در محصول %(product_title)s وجود ندارد."
 
-#: views.py:472
+#: views.py:482
 msgid "A comment that is a reply cannot be liked."
 msgstr "نظری که یک پاسخ است نمی تواند موافقت شود."
 
-#: views.py:488
+#: views.py:498
 msgid "The comment like was removed."
 msgstr "موافقت نظر حذف شد."
 
-#: views.py:492
+#: views.py:502
 msgid "The comment was successfully liked."
 msgstr "نظر با موفقیت موافقت شد."
 
-#: views.py:513
+#: views.py:523
 msgid "A comment that is a reply cannot be disliked."
 msgstr "نظری که یک پاسخ است نمی تواند مخالفت شود."
 
-#: views.py:529
+#: views.py:539
 msgid "The comment dislike was removed."
 msgstr "مخالفت نظر حذف شد."
 
-#: views.py:533
+#: views.py:543
 msgid "The comment was successfully disliked."
 msgstr "نظر با موفقیت مخالفت شد."
 
-#: views.py:748
+#: views.py:758
 msgid "The cart is empty."
 msgstr "سبد خرید خالی است."
 
-#: views.py:786 views.py:870
+#: views.py:796 views.py:880
 msgid "Error from zarinpal."
 msgstr "خطا از طرف زرین پال."
 
-#: views.py:789
+#: views.py:799
 msgid "Your wallet balance is not enough."
 msgstr "موجودی کیف پول شما کافی نیست."
 
-#: views.py:795 views.py:820 views.py:893
+#: views.py:805 views.py:830 views.py:903
 msgid "Your payment has been successfully complete."
 msgstr "پرداخت شما با موفقیت انجام شد."
 
-#: views.py:822 views.py:895
+#: views.py:832 views.py:905
 msgid ""
 "Your payment has been successfully complete and has already been register."
 msgstr "پرداخت شما با موفقیت انجام شد و قبلا ثبت شده است."
 
-#: views.py:824 views.py:826 views.py:898 views.py:901
+#: views.py:834 views.py:836 views.py:908 views.py:911
 msgid "The payment was unsuccessful."
 msgstr "پرداخت ناموفق بود."
 
